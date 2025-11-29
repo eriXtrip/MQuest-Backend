@@ -12,6 +12,8 @@ dotenv.config({ path: path.join(__dirname, '.env') });
 
 // 3. Add debug output
 console.log('Loading DB config for:', process.env.DB_USER);
+console.log('DB_HOST=', process.env.DB_HOST);
+console.log('DB_PORT=', process.env.DB_PORT);
 
 export default {
   db: {
@@ -25,12 +27,12 @@ export default {
     queueLimit: 0,
     ssl: process.env.DB_SSL === 'true' 
   },
-  port: process.env.PORT,
+  port: Number(process.env.PORT) || 8080,
   apiUrl: process.env.API_URL,
   googleClientId: process.env.GOOGLE_CLIENT_ID,
   googleClientSecret: process.env.GOOGLE_CLIENT_SECRET,
   googleRedirectUri: process.env.GOOGLE_REDIRECT_URI,
   googleRefreshToken: process.env.GOOGLE_REFRESH_TOKEN,
-  port: process.env.PORT,
+  port: Number(process.env.PORT) || 8080,
   environment: process.env.NODE_ENV,
 };

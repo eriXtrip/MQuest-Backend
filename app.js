@@ -1,7 +1,9 @@
 // my-app-backend/app.js  
 // To start backend server: cd my-app-backend npm run dev 
 // To stop backend serve: Ctrl + C
+import dotenv from 'dotenv';
 
+dotenv.config();
 import express from 'express';
 import cors from 'cors';
 import multer from 'multer';
@@ -58,9 +60,7 @@ import {
 import rankingRoutes from './routes/ranking.js';
 import config from './config.js';
 import os from 'os';
-import dotenv from 'dotenv';
 
-dotenv.config();
 
 const app = express();
 const PORT = config.port;
