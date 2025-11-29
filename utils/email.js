@@ -22,10 +22,10 @@ async function createTransporter() {
     auth: {
       type: 'OAuth2',
       user: process.env.EMAIL_USER,
-      clientId: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      refreshToken: process.env.GOOGLE_REFRESH_TOKEN,
-      accessToken: accessToken.token,
+      clientId: process.env.EMAIL_CLIENT_ID,
+      clientSecret: process.env.EMAIL_SECRET,
+      refreshToken: process.env.EMAIL_REFRESH_TOKEN,
+      accessToken: process.env.EMAIL_ACCESS_TOKEN || accessToken.token,
     },
     tls: {
       rejectUnauthorized: process.env.NODE_ENV === 'production'
@@ -38,6 +38,8 @@ async function createTransporter() {
 }
 
 export const sendVerificationEmail = async (email, code, title, message) => {
+  const transporter = await createTransporter();
+
   const mailOptions = {
     from: `"${process.env.EMAIL_FROM_NAME || 'no-reply'}" <${process.env.EMAIL_FROM_ADDRESS || process.env.EMAIL_USER}>`,
     to: email,
