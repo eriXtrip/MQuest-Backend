@@ -5,13 +5,13 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const oAuth2Client = new google.auth.OAuth2(
-  process.env.GOOGLE_CLIENT_ID,
-  process.env.GOOGLE_CLIENT_SECRET,
-  process.env.GOOGLE_REDIRECT_URI
+  process.env.EMAIL_CLIENT_ID,
+  process.env.EMAIL_SECRET,
+  process.env.EMAIL_REDIRECT_URI
 );
 
 oAuth2Client.setCredentials({
-  refresh_token: process.env.GOOGLE_REFRESH_TOKEN
+  refresh_token: process.env.EMAIL_REFRESH_TOKEN
 });
 
 async function createTransporter() {
