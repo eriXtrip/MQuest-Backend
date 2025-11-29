@@ -1,50 +1,41 @@
-// my-app-backend/utils/email.js SMTP(Simple Mail Transfer Protocol)
-
 import nodemailer from 'nodemailer';
+import { google } from 'googleapis';
 import dotenv from 'dotenv';
+
 dotenv.config();
 
-const transporter = nodemailer.createTransport({
-  host: process.env.EMAIL_HOST,
-  port: parseInt(process.env.EMAIL_PORT),
-  secure: process.env.EMAIL_SECURE === 'true', // Convert to boolean
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASSWORD
-  },
-  tls: {
-    minVersion: 'TLSv1.2', // More secure default
-    rejectUnauthorized: process.env.NODE_ENV === 'production' // Strict in prod
-  },
-  logger: true, // Enable logging
-  debug: process.env.NODE_ENV !== 'production' // Debug in dev
+const oAuth2Client = new google.auth.OAuth2(
+  process.env.GOOGLE_CLIENT_ID,
+  process.env.GOOGLE_CLIENT_SECRET,
+  process.env.GOOGLE_REDIRECT_URI
+);
+
+oAuth2Client.setCredentials({
+  refresh_token: process.env.GOOGLE_REFRESH_TOKEN
 });
 
-// Enhanced verification
-async function verifyTransporter() {
-  try {
-    await transporter.verify();
-    console.log('✅ SMTP server is ready');
-    return true;
-  } catch (error) {
-    console.error('❌ SMTP connection failed:', {
-      error: error.message,
-      code: error.code,
-      stack: error.stack
-    });
-    console.error('SMTP Configuration:', {
-      host: process.env.EMAIL_HOST,
-      port: process.env.EMAIL_PORT,
-      user: process.env.EMAIL_USER,
-      secure: process.env.EMAIL_SECURE
-    });
-    return false;
-  }
-}
+async function createTransporter() {
+  const accessToken = await oAuth2Client.getAccessToken();
 
-// Verify on startup and periodically
-verifyTransporter();
-setInterval(verifyTransporter, 3600000); // 1 hour checks
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      type: 'OAuth2',
+      user: process.env.EMAIL_USER,
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      refreshToken: process.env.GOOGLE_REFRESH_TOKEN,
+      accessToken: accessToken.token,
+    },
+    tls: {
+      rejectUnauthorized: process.env.NODE_ENV === 'production'
+    },
+    logger: true,
+    debug: process.env.NODE_ENV !== 'production'
+  });
+
+  return transporter;
+}
 
 export const sendVerificationEmail = async (email, code, title, message) => {
   const mailOptions = {
