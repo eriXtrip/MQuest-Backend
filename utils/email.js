@@ -1,51 +1,37 @@
-import nodemailer from 'nodemailer';
-import { google } from 'googleapis';
+import { Resend } from 'resend';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
-const oAuth2Client = new google.auth.OAuth2(
-  process.env.EMAIL_CLIENT_ID,
-  process.env.EMAIL_SECRET,
-  process.env.EMAIL_REDIRECT_URI
-);
+const resend = new Resend(process.env.RESEND_API_KEY);
 
-oAuth2Client.setCredentials({
-  refresh_token: process.env.EMAIL_REFRESH_TOKEN
-});
+// async function createTransporter() {
+//   const accessToken = await oAuth2Client.getAccessToken();
 
-async function createTransporter() {
-  const accessToken = await oAuth2Client.getAccessToken();
+//   const transporter = nodemailer.createTransport({
+//     service: 'gmail',
+//     auth: {
+//       type: 'OAuth2',
+//       user: process.env.EMAIL_USER,
+//       clientId: process.env.EMAIL_CLIENT_ID,
+//       clientSecret: process.env.EMAIL_SECRET,
+//       refreshToken: process.env.EMAIL_REFRESH_TOKEN,
+//       accessToken: process.env.EMAIL_ACCESS_TOKEN || accessToken.token,
+//     },
+//     tls: {
+//       rejectUnauthorized: process.env.NODE_ENV === 'production'
+//     },
+//     logger: true,
+//     debug: process.env.NODE_ENV !== 'production'
+//   });
 
-  const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      type: 'OAuth2',
-      user: process.env.EMAIL_USER,
-      clientId: process.env.EMAIL_CLIENT_ID,
-      clientSecret: process.env.EMAIL_SECRET,
-      refreshToken: process.env.EMAIL_REFRESH_TOKEN,
-      accessToken: process.env.EMAIL_ACCESS_TOKEN || accessToken.token,
-    },
-    tls: {
-      rejectUnauthorized: process.env.NODE_ENV === 'production'
-    },
-    logger: true,
-    debug: process.env.NODE_ENV !== 'production'
-  });
-
-  return transporter;
-}
+//   return transporter;
+// }
 
 export const sendVerificationEmail = async (email, code, title, message) => {
-  const transporter = await createTransporter();
+  // const transporter = await createTransporter();
 
-  const mailOptions = {
-    from: `"${process.env.EMAIL_FROM_NAME || 'no-reply'}" <${process.env.EMAIL_FROM_ADDRESS || process.env.EMAIL_USER}>`,
-    to: email,
-    subject: title,
-    text: `${message}\n\nYour code: ${code}`,
-    html: `
+    const htmlContent = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; background: #f7f7f7; border-radius: 8px;">
         <div style="text-align: center;">
           <h2 style="color: #302f82;">${title}</h2>
@@ -69,25 +55,24 @@ export const sendVerificationEmail = async (email, code, title, message) => {
           <p style="font-size: 14px; color: #aaa;">If you did not request this, please ignore this email.</p>
         </div>
       </div>
-    `,
-    priority: 'high'
-  };
+    `;
 
   try {
-    const info = await transporter.sendMail(mailOptions);
-    console.log('📧 Email sent:', {
-      messageId: info.messageId,
+    const result = await resend.emails.send({
+      from: process.env.EMAIL_FROM_ADDRESS || 'no-reply@yourdomain.com',
       to: email,
-      subject: title
+      subject: title,
+      html: htmlContent,
+    });
+
+    console.log('📧 Email sent:', {
+      id: result.id,
+      to: email,
+      subject: title,
     });
     return true;
-  } catch (error) {
-    console.error('❌ Email send failed:', {
-      to: email,
-      error: error.message,
-      code: error.code,
-      stack: error.stack
-    });
-    throw new Error(`Failed to send email: ${error.message}`);
+  } catch (err) {
+    console.error('❌ Failed to send email:', err);
+    throw new Error(`Failed to send email: ${err.message}`);
   }
 };
