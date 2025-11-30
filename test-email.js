@@ -1,4 +1,4 @@
-import { sendVerificationEmail } from './utils/email.js'; // path to your email util
+import { sendVerificationEmail } from './utils/email2.js'; // path to your email util
 
 async function testEmail() {
   try {
