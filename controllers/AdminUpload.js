@@ -1,5 +1,6 @@
 // my-app-backend/controllers/AdminUpload.js
 import pool from '../services/db.js';
+import fs from 'fs/promises'
 import { uploadToDrive } from '../utils/driveUploader.js';
 import { createAndUploadGameJson } from '../utils/createGameJson.js';
 import { createAndUploadTestJson } from '../utils/createTestJson.js';
