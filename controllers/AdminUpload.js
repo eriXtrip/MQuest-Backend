@@ -1,6 +1,5 @@
 // my-app-backend/controllers/AdminUpload.js
 import pool from '../services/db.js';
-import fs from 'fs/promises'
 import { uploadToDrive } from '../utils/driveUploader.js';
 import { createAndUploadGameJson } from '../utils/createGameJson.js';
 import { createAndUploadTestJson } from '../utils/createTestJson.js';
@@ -248,11 +247,6 @@ export const uploadLesson = async (req, res) => {
 
             console.log(`Uploaded question image for item ${itemIndex}:`, driveMeta.name);
 
-            // 🗑️ INLINE DELETE
-            fs.unlink(localPath, (err) => {
-              if (err) console.error("❌ Failed to delete local file:", localPath, err);
-              else console.log("🗑️ Deleted local file:", localPath);
-            });
           }
         }
 
@@ -271,11 +265,6 @@ export const uploadLesson = async (req, res) => {
               };
               console.log(`Uploaded choice ${c} for item ${itemIndex}:`, driveMeta.name);
 
-              // 🗑️ INLINE DELETE
-              fs.unlink(localPath, (err) => {
-                if (err) console.error("❌ Failed to delete local file:", localPath, err);
-                else console.log("🗑️ Deleted local file:", localPath);
-              });
             }
           } else if (typeof choice === 'string' && choice.trim()) {
             // Keep plain text choices
