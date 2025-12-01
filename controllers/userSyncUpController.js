@@ -74,6 +74,15 @@ export const syncUp = async (req, res) => {
     // Commit transaction
     await client.query('COMMIT');
 
+    // calculate rankings after scores and answers have been synced
+    // if (userId) {
+    //   // Call with specific pupil_id
+    //   await pool.query('CALL award_ranking_achievements(?)', [userId]);
+    // } else {
+    //   // Call without parameter (NULL) to process all pupils
+    //   await pool.query('CALL award_ranking_achievements(NULL)');
+    // }
+
     res.json({
       success: true,
       message: 'Sync successful',
@@ -333,7 +342,7 @@ export const syncNotification = async (req, res) => {
             n.type || 'info',
             n.title,
             n.message,
-            n.is_read ? 1 : 0,
+            n.is_read,
             createdAt,
             readAt
           ]

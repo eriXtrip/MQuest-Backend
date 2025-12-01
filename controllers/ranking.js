@@ -45,8 +45,14 @@ export const getOverallRanking = async (req, res) => {
 
     const [rows] = await pool.query(query, params);
 
-    // Then award ranking achievements
-    await pool.query('CALL award_ranking_achievements()');
+    // // Then award ranking achievements
+    // if (pupil_id) {
+    //   // Call with specific pupil_id
+    //   await pool.query('CALL award_ranking_achievements(?)', [pupil_id]);
+    // } else {
+    //   // Call without parameter (NULL) to process all pupils
+    //   await pool.query('CALL award_ranking_achievements(NULL)');
+    // }
 
     console.log(`🏆 Ranking rows returned: ${rows.length}`);
 

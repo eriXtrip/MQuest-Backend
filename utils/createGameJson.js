@@ -29,9 +29,9 @@ export const createAndUploadGameJson = async (connection, gameId, gameType) => {
           ),
           'items', JSON_ARRAYAGG(
             CASE gt.name
-              WHEN 'speak' THEN
+              WHEN 'game_speak' THEN
                 JSON_OBJECT('id', gi.item_id, 'sentence', gi.sentence)
-              WHEN 'sentence' THEN
+              WHEN 'game_comp' THEN
                 JSON_OBJECT(
                   'id', gi.item_id,
                   'sentence1', gi.sentence1,
@@ -39,11 +39,11 @@ export const createAndUploadGameJson = async (connection, gameId, gameType) => {
                   'answer', gi.answer,
                   'definition', gi.definition
                 )
-              WHEN 'flashcard' THEN
+              WHEN 'game_flash' THEN
                 JSON_OBJECT('id', gi.item_id, 'term', gi.term, 'definition', gi.definition)
-              WHEN 'matching' THEN
+              WHEN 'game_match' THEN
                 JSON_OBJECT('id', gi.item_id, 'term', gi.term, 'definition', gi.definition)
-              WHEN 'angleMathHunt' THEN
+              WHEN 'game_img' THEN
                 JSON_OBJECT(
                   'id', gi.item_id,
                   'question', gi.question,
