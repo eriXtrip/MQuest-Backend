@@ -443,11 +443,16 @@ export const uploadLesson = async (req, res) => {
 
       const title = `Lesson ${lesson_title} ${label}`;
 
+      // Generic description based on label
+        const description = label.toLowerCase().includes('pre') 
+        ? `Pre-test to assess your baseline knowledge before starting this lesson. Complete this quiz to identify areas you may need to focus on.`
+        : `Post-test to measure your learning progress after completing the lesson. This assessment helps reinforce what you've learned and track your improvement.`;
+
       // 1. subject_contents row (type = quiz)
       const [contentResult] = await connection.query(
         `INSERT INTO subject_contents (lesson_belong, content_type, title, description)
          VALUES (?, 'quiz', ?, ?)`,
-        [lessonId, title, JSON.stringify(questions)]
+        [lessonId, title, description]
       );
       const contentId = contentResult.insertId;
 
