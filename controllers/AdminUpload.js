@@ -134,13 +134,14 @@ export const uploadLesson = async (req, res) => {
     }
 
 
-    // Step 1: Get the next lesson_number for this subject
+    // Step 1: Get the next lesson_number for this subject in this quarter
     const [maxResult] = await connection.query(
       `SELECT COALESCE(MAX(lesson_number), 0) AS max_number 
-       FROM lessons 
-       WHERE subject_belong = ?`,
-      [subjectId]
+      FROM lessons 
+      WHERE subject_belong = ? AND quarter = ?`,
+      [subjectId, quarter]
     );
+
     const nextLessonNumber = maxResult[0].max_number + 1;
 
     // Step 2: Insert Lesson record
