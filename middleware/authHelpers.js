@@ -4,14 +4,14 @@ import jwt from 'jsonwebtoken';
 import pool from '../services/db.js';
 
 export const verifyAndDecodeToken = async (req) => {
-  const token = req.headers.authorization?.split(' ')[1];
+  const token = req.headers.authorization?.split(' ')[1]?.trim();
   if (!token) {
     throw new Error('No authentication token provided');
   }
 
-  // Check revocation
+  // Use case-sensitive comparison and limit the result
   const [revoked] = await pool.query(
-    'SELECT * FROM revoked_tokens WHERE token = ?',
+    'SELECT 1 FROM revoked_tokens WHERE BINARY token = ? LIMIT 1',
     [token]
   );
 

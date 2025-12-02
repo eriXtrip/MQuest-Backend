@@ -396,38 +396,38 @@ export const admin_confirm_login = async (req, res) => {
 
 // Token revocation middleware
 export const checkTokenRevocation = async (req, res, next) => {
-    const token = req.headers.authorization?.split(' ')[1];
-    if (!token) return res.status(401).json({ error: 'No token provided' });
+  const token = req.headers.authorization?.split(' ')[1]?.trim();
+  if (!token) return res.status(401).json({ error: 'No token provided' });
 
-    try {
-        const [revoked] = await pool.query(
-            'SELECT 1 FROM revoked_tokens WHERE token = ?',
-            [token]
-        );
+  try {
+    const [revoked] = await pool.query(
+      'SELECT 1 FROM revoked_tokens WHERE BINARY token = ? LIMIT 1',
+      [token]
+    );
         
-        if (revoked.length > 0) {
-            return res.status(401).json({ error: 'Token revoked' });
-        }
-        
-        next();
-    } catch (error) {
-        console.error('Token revocation check failed:', error);
-        res.status(500).json({ error: 'Authentication failed' });
+    if (revoked.length > 0) {
+      return res.status(401).json({ error: 'Token revoked' });
     }
+        
+    next();
+  } catch (error) {
+    console.error('Token revocation check failed:', error);
+    res.status(500).json({ error: 'Authentication failed' });
+  }
 };
 
 // Token verification middleware
 export const verifyToken = async (req, res) => {
   try {
-    const token = req.headers.authorization?.split(' ')[1];
+    const token = req.headers.authorization?.split(' ')[1]?.trim();
     const { email } = req.body;
 
     // Check revocation
     const [revoked] = await pool.query(
-      'SELECT * FROM revoked_tokens WHERE token = ?',
+      'SELECT 1 FROM revoked_tokens WHERE BINARY token = ? LIMIT 1',
       [token]
     );
-    
+
     if (revoked.length > 0) {
       return res.status(401).json({ valid: false });
     }
@@ -444,7 +444,7 @@ export const verifyToken = async (req, res) => {
 export const logout = async (req, res) => {
     try {
         const { user_id } = req.body; // ✅ receive user_id from request body
-        const token = req.headers.authorization?.split(" ")[1];
+    const token = req.headers.authorization?.split(" ")[1]?.trim();
 
         if (!token) {
             return res.status(400).json({ error: "No token provided" });
@@ -463,8 +463,8 @@ export const logout = async (req, res) => {
 
         // Insert the token into revoked_tokens
         await pool.query(
-            "INSERT INTO revoked_tokens (token, revoked_at) VALUES (?, CURRENT_TIMESTAMP)",
-            [token]
+          "INSERT INTO revoked_tokens (token, revoked_at) VALUES (?, CURRENT_TIMESTAMP)",
+          [token]
         );
 
         // ✅ Log the logout activity using provided user_id
