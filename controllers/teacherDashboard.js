@@ -227,13 +227,14 @@ export const getTeacherDashboardStats = async (req, res) => {
 
             -- Enrollment
             SELECT
-                  'Enrollment' AS title,
-                  'enrollment' AS type,
-                  e.enrollment_date AS date,
-                  CONCAT('Enrolled in section ID ', e.section_id) AS subtitle,
-                  CONCAT(u.first_name, ' ', u.middle_name, ' ', u.last_name) AS fullname
+                'Enrollment' AS title,
+                'enrollment' AS type,
+                e.enrollment_date AS date,
+                CONCAT('Enrolled in ', s.section_name) AS subtitle,
+                CONCAT(u.first_name, ' ', u.middle_name, ' ', u.last_name) AS fullname
             FROM enroll_me e
             JOIN users u ON u.user_id = e.pupil_id
+            JOIN sections s ON s.section_id = e.section_id
             WHERE e.pupil_id IN (?)
 
             ) AS all_activities
