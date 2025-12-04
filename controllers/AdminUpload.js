@@ -3,7 +3,6 @@ import pool from '../services/db.js';
 import { uploadToDrive } from '../utils/driveUploader.js';
 import { createAndUploadGameJson } from '../utils/createGameJson.js';
 import { createAndUploadTestJson } from '../utils/createTestJson.js';
-import { logToBackend } from '../services/backend_log.js';
 
 export const uploadLesson = async (req, res) => {
   const connection = await pool.getConnection();
@@ -30,10 +29,6 @@ export const uploadLesson = async (req, res) => {
       //   link: driveFile?.webContentLink,
       // });
 
-      await logToBackend({
-        action: 'FILE_UPLOAD',
-        details: `Upload successful: ${driveFile?.name}`
-      });
 
     }
 
@@ -45,10 +40,6 @@ export const uploadLesson = async (req, res) => {
       //   link: driveVideo?.webContentLink,
       // });
 
-      await logToBackend({
-        action: 'FILE_UPLOAD',
-        details: `Upload successful: ${driveFile?.name}`
-      });
     }
 
     // console.log('📸 Uploaded imageQuizFiles:', imageQuizFiles.map(f => ({
@@ -58,10 +49,6 @@ export const uploadLesson = async (req, res) => {
     //   size: f.size
     // })));
 
-    await logToBackend({
-      action: 'FILE_UPLOAD',
-      details: `Upload successful: ${f.fieldname}`
-    });
 
     // console.log('📦 Multer files received:');
     // if (req.files) {
@@ -304,22 +291,13 @@ export const uploadLesson = async (req, res) => {
       if (!Array.isArray(items) || items.length <= 1) {
         // console.log(`Skipping ${gameType} `);
 
-        await logToBackend({
-          action: 'GAME_UPLOAD',
-          details: `Skipping ${gameType} (less than 2 items)`
-        });
-
         continue;
       }
 
       const normalizedGameType = gameTypeMap[gameType];
 
       if (!normalizedGameType) {
-        console.warn(`Unknown game type from frontend: ${gameType}`);
-        await logToBackend({
-          action: 'GAME_UPLOAD_ERROR',
-          details: `Upload fail, unknown game type: ${gameType}`
-        });
+        //console.warn(`Unknown game type from frontend: ${gameType}`);
         continue;
       }
 
@@ -331,10 +309,6 @@ export const uploadLesson = async (req, res) => {
 
       if (!typeRow.length) {
         // console.warn(`Skipping game "${gameType}" - game_type_id not found`);
-        await logToBackend({
-          action: 'GAME_UPLOAD_ERROR',
-          details: `Upload fail, unknown game_type_id: ${gameType}`
-        });
         continue;
       }
       const gameTypeId = typeRow[0].game_type_id;
@@ -464,16 +438,8 @@ export const uploadLesson = async (req, res) => {
 
         // console.log(`Game JSON uploaded: ${jsonFileName} → ${jsonUrl}`);
 
-        await logToBackend({
-          action: 'GAME_UPLOAD',
-          details: `Game JSON uploaded: ${jsonFileName} → ${jsonUrl}`
-        });
       } catch (jsonErr) {
         // console.error(`Failed to generate JSON for game ${gameId}:`, jsonErr);
-        await logToBackend({
-          action: 'GAME_UPLOAD_ERROR',
-          details: `Failed to generate JSON for game ${gameId}:, ${jsonErr.message || jsonErr}`
-        });
       }
     }
 
@@ -570,16 +536,8 @@ export const uploadLesson = async (req, res) => {
         );
 
         // console.log(`Quiz JSON uploaded: ${quizFile} → ${quizUrl}`);
-        await logToBackend({
-          action: 'TEST_UPLOAD',
-          details: `Quiz JSON uploaded:, ${quizFile} → ${quizUrl}`
-        });
       } catch (jsonErr) {
         // console.error(`Failed to generate quiz JSON for test_id=${testId}:`, jsonErr);
-        await logToBackend({
-          action: 'TEST_UPLOAD_ERROR',
-          details: `Failed to generate quiz JSON for test_id=${testId}:, ${jsonErr.message || jsonErr}`
-        });
       }
 
     };
@@ -587,10 +545,6 @@ export const uploadLesson = async (req, res) => {
     await insertQuiz(pretestQuestions, 'Pretest');
     await insertQuiz(posttestQuestions, 'Posttest');
     
-    await logToBackend({
-      action: 'LESSON_UPLOAD',
-      details: `Lesson "${lesson_title}" uploaded successfully with all contents`
-    });
 
     await connection.commit();
     return res.json({ success: true, message: '✅ Lesson uploaded successfully with all contents' });
@@ -599,10 +553,6 @@ export const uploadLesson = async (req, res) => {
   } catch (err) {
     // console.error('💥 Error uploading lesson:', err);
 
-    await logToBackend({
-      action: 'UPLOAD_ERROR',
-      details: `Error uploading lesson:, ${err.message || err}`
-    });
 
     await connection.rollback();
     return res.status(500).json({ success: false, error: err.message });

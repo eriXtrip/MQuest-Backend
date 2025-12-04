@@ -1,7 +1,6 @@
 // my-app-backend/controllers/adminDashboard.js
 import pool from '../services/db.js';
 import { isUserAdmin } from '../utils/checkAdmin.js';
-import { logToBackend } from '../services/backend_log.js';
 
 /**
  * GET /api/admin/lessons/count
@@ -91,10 +90,6 @@ export const getTotalLessonsCount = async (req, res) => {
 
   } catch (error) {
     // console.error('💥 Error in getTotalLessonsCount:', error);
-    await logToBackend({
-      action: 'ERROR',
-      details: `Error in getTotalLessonsCount: ${error.message || error}`
-    });
 
     res.status(500).json({
       success: false,
@@ -380,10 +375,6 @@ export const getSubjectSummary = async (req, res) => {
   } catch (error) {
     // console.error('💥 Error in getSubjectSummary:', error);
 
-    await logToBackend({
-      action: 'ERROR',
-      details: `Error in getSubjectSummary: ${error.message || error}`
-    });
 
     res.status(500).json({
       success: false,
@@ -427,10 +418,6 @@ export const getSubjectUsers = async (req, res) => {
   } catch (error) {
     // console.error('💥 Error in getSubjectUsers:', error);
 
-    await logToBackend({
-      action: 'ERROR',
-      details: `Error in getSubjectUsers: ${error.message || error}`
-    });
 
     res.status(500).json({
       success: false,
@@ -509,10 +496,6 @@ export const getSubjectLessonsAndContents = async (req, res) => {
   } catch (error) {
     // console.error('Error in getSubjectLessonsAndContents:', error);
 
-    await logToBackend({
-      action: 'ERROR',
-      details: `Error in getSubjectLessonsAndContents: ${error.message || error}`
-    });
 
     res.status(500).json({
       success: false,
@@ -571,10 +554,6 @@ export const getTeachersWithSections = async (req, res) => {
   } catch (error) {
     // console.error('💥 Error in getTeachersWithSections:', error);
 
-    await logToBackend({
-      action: 'ERROR',
-      details: `Error in getTeachersWithSections: ${error.message || error}`
-    });
 
     res.status(500).json({
       success: false,
