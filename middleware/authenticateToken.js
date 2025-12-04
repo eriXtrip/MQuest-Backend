@@ -14,7 +14,7 @@ export const authenticateToken = async (req, res, next) => {
 
     next(); // Proceed to route handler
   } catch (error) {
-    console.error('Authentication failed:', error.message);
+    //console.error('Authentication failed:', error.message);
 
     if (error.message === 'No authentication token provided') {
       return res.status(401).json({ error: 'Access token required' });

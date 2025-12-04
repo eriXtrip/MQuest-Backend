@@ -75,11 +75,11 @@ export async function sendVerificationEmail(to, code, title, messageText) {
       requestBody: { raw: encodedMessage }
     });
 
-    console.log("📧 Gmail API: Email sent!", res.data.id);
+    //console.log("📧 Gmail API: Email sent!", res.data.id);
     return true;
 
   } catch (err) {
-    console.error("❌ Failed to send email:", err);
+    //console.error("❌ Failed to send email:", err);
     return false;
   }
 }

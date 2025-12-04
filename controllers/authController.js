@@ -52,7 +52,7 @@ export const startRegistration = async (req, res) => {
         return res.status(400).json({ error: 'Please use another email.' });
       }
     } catch (error) {
-      console.error('Database error:', error);
+      //console.error('Database error:', error);
       return res.status(500).json({ error: 'Internal server error.' });
     }
 
@@ -95,7 +95,7 @@ export const startRegistration = async (req, res) => {
     if (error.code === 'ER_DUP_ENTRY') {
       return res.status(409).json({ error: 'Email already registered' });
     }
-    console.error('Registration error:', error);
+    //console.error('Registration error:', error);
     res.status(500).json({ error: 'Registration failed' });
   }
 };
@@ -131,7 +131,7 @@ export const verifyCode = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Verification error:', error);
+    //console.error('Verification error:', error);
     res.status(500).json({ error: 'Verification failed' });
   }
 };
@@ -141,7 +141,7 @@ export const completeRegistration = async (req, res) => {
   try {
     await connection.beginTransaction(); // Start transaction
 
-    console.log("Raw request body:", req.body);
+    //console.log("Raw request body:", req.body);
     const {
       email: rawEmail,
       password: rawPassword,
@@ -237,7 +237,7 @@ export const completeRegistration = async (req, res) => {
 
   } catch (error) {
     await connection.rollback(); // Rollback on any error
-    console.error('Registration completion error:', error);
+    //console.error('Registration completion error:', error);
     res.status(500).json({ error: 'Registration completion failed' });
   } finally {
     connection.release(); // Release connection back to pool
@@ -255,7 +255,7 @@ export const login = async (req, res) => {
         }
 
         // Find user by email
-        console.log('Querying database for user...');
+        //console.log('Querying database for user...');
         const [users] = await pool.query(
             `SELECT 
                 u.user_id, 
@@ -281,14 +281,14 @@ export const login = async (req, res) => {
             [email]
         );
 
-        console.log('Database query results:', {
-            userCount: Array.isArray(users) ? users.length : 0,
-            firstUser: Array.isArray(users) && users[0] ? {
-                id: users[0].user_id,
-                email: users[0].email,
-                role_id: users[0].role_id
-            } : null
-        });
+        //console.log('Database query results:', {
+        //     userCount: Array.isArray(users) ? users.length : 0,
+        //     firstUser: Array.isArray(users) && users[0] ? {
+        //         id: users[0].user_id,
+        //         email: users[0].email,
+        //         role_id: users[0].role_id
+        //     } : null
+        // });
 
         // Check if users array is valid and not empty
         if (!!!users || users.length === 0) {
@@ -345,7 +345,7 @@ export const login = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Login error:', error);
+        //console.error('Login error:', error);
         if (error.code === 'ECONNREFUSED') {
             return res.status(500).json({ error: 'Database connection failed' });
         }
@@ -357,7 +357,7 @@ export const admin_confirm_login = async (req, res) => {
   try {
     const { userId, secret_key } = req.body;
 
-    console.log("received admin login:", userId, secret_key);
+    //console.log("received admin login:", userId, secret_key);
 
     if (!userId || !secret_key) {
       return res.status(400).json({ error: "User ID and secret key are required" });
@@ -388,7 +388,7 @@ export const admin_confirm_login = async (req, res) => {
 
     return res.json({ success: true, message: "Admin confirmed" });
   } catch (error) {
-    console.error("Admin confirm error:", error);
+    //console.error("Admin confirm error:", error);
     res.status(500).json({ error: "Server error confirming admin login" });
   }
 };
@@ -411,7 +411,7 @@ export const checkTokenRevocation = async (req, res, next) => {
         
     next();
   } catch (error) {
-    console.error('Token revocation check failed:', error);
+    //console.error('Token revocation check failed:', error);
     res.status(500).json({ error: 'Authentication failed' });
   }
 };
@@ -472,7 +472,7 @@ export const logout = async (req, res) => {
 
         res.json({ success: true });
     } catch (error) {
-        console.error("Logout failed:", error);
+        //console.error("Logout failed:", error);
         res.status(500).json({ error: "Logout failed" });
     }
 };
@@ -528,7 +528,7 @@ export const startPasswordReset = async (req, res) => {
     res.status(200).json({ success: true, message: 'Verification code sent' });
 
   } catch (error) {
-    console.error('startPasswordReset error:', error);
+    //console.error('startPasswordReset error:', error);
     res.status(500).json({ error: 'Failed to initiate password reset' });
   }
 };
@@ -554,7 +554,7 @@ export const verifyResetCode = async (req, res) => {
     res.status(200).json({ success: true, message: 'Code verified' });
 
   } catch (error) {
-    console.error('verifyResetCode error:', error);
+    //console.error('verifyResetCode error:', error);
     res.status(500).json({ error: 'Failed to verify code' });
   }
 };
@@ -606,7 +606,7 @@ export const completePasswordReset = async (req, res) => {
       .status(200)
       .json({ success: true, message: "Password reset successful" });
   } catch (error) {
-    console.error("completePasswordReset error:", error);
+    //console.error("completePasswordReset error:", error);
     return res.status(500).json({ error: "Failed to reset password" });
   }
 };
@@ -616,10 +616,10 @@ export const completePasswordReset = async (req, res) => {
 export const changePassword = async (req, res) => {
   try {
     const { server_id, currentPassword, newPassword } = req.body;
-    console.log('ChangePassword data:', { server_id, currentPassword, newPassword });
+    //console.log('ChangePassword data:', { server_id, currentPassword, newPassword });
 
     const decoded = await verifyAndDecodeToken(req);
-    console.log('swt: ', decoded);
+    //console.log('swt: ', decoded);
 
     if (!server_id || !currentPassword || !newPassword) {
       return res.status(400).json({ error: 'Server ID, current password, and new password are required' });
@@ -644,7 +644,7 @@ export const changePassword = async (req, res) => {
 
     res.json({ success: true });
   } catch (error) {
-    console.error('Change password error:', error.message);
+    //console.error('Change password error:', error.message);
     res.status(401).json({ error: error.message || 'Failed to change password' });
   }
 };
@@ -657,7 +657,7 @@ export const vulnerableFunction = async (req, res) => {
   const { email } = req.body;
   try {
     const query = `SELECT * FROM users WHERE email = '${email}'`;
-    console.log("🔍 Final query:", query);
+    //console.log("🔍 Final query:", query);
 
     const [rows] = await pool.query(query);
 
@@ -667,7 +667,7 @@ export const vulnerableFunction = async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
   } catch (error) {
-    console.error('❌ SQL error:', error);
+    //console.error('❌ SQL error:', error);
     return res.status(500).json({ error: 'Something went wrong' });
   }
 };
@@ -691,7 +691,7 @@ export const secureFunction = async (req, res) => {
     }
 
   } catch (error) {
-    console.error('Secure login error:', error.message);
+    //console.error('Secure login error:', error.message);
     res.status(500).json({ error: 'Something went wrong' });
   }
 };

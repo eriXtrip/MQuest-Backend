@@ -13,7 +13,7 @@ export const createAndUploadTestJson = async (connection, testId) => {
   const filePath = path.join(TEMP_DIR, filename);
 
   try {
-    console.log(`[TEST-JSON] Building quiz JSON for test_id=${testId}`);
+    //console.log(`[TEST-JSON] Building quiz JSON for test_id=${testId}`);
 
     const [rows] = await connection.query(`
       SELECT
@@ -124,27 +124,27 @@ export const createAndUploadTestJson = async (connection, testId) => {
     // 2. Write pretty JSON file
     // -----------------------------------------------------------------
     await writeFile(filePath, JSON.stringify(quizData, null, 2), 'utf8');
-    console.log(`[TEST-JSON] File written: ${filePath}`);
+    //console.log(`[TEST-JSON] File written: ${filePath}`);
 
     // -----------------------------------------------------------------
     // 3. Upload to Google Drive
     // -----------------------------------------------------------------
-    console.log(`[TEST-JSON] Uploading ${filename} to Drive…`);
+    //console.log(`[TEST-JSON] Uploading ${filename} to Drive…`);
     const driveMeta = await uploadToDrive({
       path: filePath,
       originalname: filename,
       mimetype: 'application/json',
     });
-    console.log(`[TEST-JSON] Uploaded → ${driveMeta.webContentLink}`);
+    //console.log(`[TEST-JSON] Uploaded → ${driveMeta.webContentLink}`);
 
     // -----------------------------------------------------------------
     // 4. Clean up local file
     // -----------------------------------------------------------------
     try {
       await unlink(filePath);
-      console.log(`[TEST-JSON] Temp file removed`);
+      //console.log(`[TEST-JSON] Temp file removed`);
     } catch (e) {
-      console.warn(`[TEST-JSON] Could not delete temp file:`, e.message);
+      //console.warn(`[TEST-JSON] Could not delete temp file:`, e.message);
     }
 
     // -----------------------------------------------------------------
@@ -156,7 +156,7 @@ export const createAndUploadTestJson = async (connection, testId) => {
       driveId: driveMeta.id,
     };
   } catch (err) {
-    console.error(`[TEST-JSON] FAILED for test_id=${testId}:`, err);
+    //console.error(`[TEST-JSON] FAILED for test_id=${testId}:`, err);
     // Try to delete the half-written file
     try { await unlink(filePath); } catch {}
     throw err;   // caller will rollback the transaction

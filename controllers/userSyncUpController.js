@@ -92,7 +92,7 @@ export const syncUp = async (req, res) => {
 
   } catch (error) {
     await client.query('ROLLBACK');
-    console.error('Sync-up failed:', error);
+    //console.error('Sync-up failed:', error);
     res.status(500).json({
       success: false,
       error: 'Sync failed',
@@ -236,7 +236,7 @@ export const syncProgress = async (req, res) => {
 
   } catch (error) {
     await client.query('ROLLBACK');
-    console.error('Progress sync failed:', error);
+    //console.error('Progress sync failed:', error);
     res.status(500).json({
       success: false,
       error: 'Sync failed',
@@ -294,7 +294,7 @@ export const syncAchievements = async (req, res) => {
 
   } catch (error) {
     await client.query('ROLLBACK');
-    console.error('Achievements sync failed:', error);
+    //console.error('Achievements sync failed:', error);
     res.status(500).json({
       success: false,
       error: 'Sync failed',
@@ -310,7 +310,7 @@ export const syncNotification = async (req, res) => {
   const userId = req.user.userId;
   const { notifications = [] } = req.body;
 
-  // console.log('📩 Received notifications from client:', JSON.stringify(notifications, null, 2));
+  // //console.log('📩 Received notifications from client:', JSON.stringify(notifications, null, 2));
 
   if (!notifications.length) {
     return res.json({ success: true, inserted_notification_ids: [] });
@@ -376,7 +376,7 @@ export const syncNotification = async (req, res) => {
     });
   } catch (error) {
     await client.query('ROLLBACK');
-    console.error('Notifications sync failed:', error);
+    //console.error('Notifications sync failed:', error);
     res.status(500).json({
       success: false,
       error: 'Sync failed',

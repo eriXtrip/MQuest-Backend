@@ -3,6 +3,7 @@ import pool from '../services/db.js';
 import { uploadToDrive } from '../utils/driveUploader.js';
 import { createAndUploadGameJson } from '../utils/createGameJson.js';
 import { createAndUploadTestJson } from '../utils/createTestJson.js';
+import { logToBackend } from '../services/backend_log.js';
 
 export const uploadLesson = async (req, res) => {
   const connection = await pool.getConnection();
@@ -23,40 +24,56 @@ export const uploadLesson = async (req, res) => {
 
     if (fileInput) {
       driveFile = await uploadToDrive(fileInput);
-      console.log('📁 Uploaded file to Drive:', {
-        name: driveFile?.name,
-        mimeType: fileInput.mimetype,
-        link: driveFile?.webContentLink,
+      // console.log('📁 Uploaded file to Drive:', {
+      //   name: driveFile?.name,
+      //   mimeType: fileInput.mimetype,
+      //   link: driveFile?.webContentLink,
+      // });
+
+      await logToBackend({
+        action: 'FILE_UPLOAD',
+        details: `Upload successful: ${driveFile?.name}`
       });
+
     }
 
     if (videoInput) {
       driveVideo = await uploadToDrive(videoInput);
-      console.log('🎞️ Uploaded video to Drive:', {
-        name: driveVideo?.name,
-        mimeType: videoInput.mimetype,
-        link: driveVideo?.webContentLink,
+      // console.log('🎞️ Uploaded video to Drive:', {
+      //   name: driveVideo?.name,
+      //   mimeType: videoInput.mimetype,
+      //   link: driveVideo?.webContentLink,
+      // });
+
+      await logToBackend({
+        action: 'FILE_UPLOAD',
+        details: `Upload successful: ${driveFile?.name}`
       });
     }
 
-    console.log('📸 Uploaded imageQuizFiles:', imageQuizFiles.map(f => ({
-      fieldname: f.fieldname,
-      originalname: f.originalname,
-      mimetype: f.mimetype,
-      size: f.size
-    })));
+    // console.log('📸 Uploaded imageQuizFiles:', imageQuizFiles.map(f => ({
+    //   fieldname: ,
+    //   originalname: f.originalname,
+    //   mimetype: f.mimetype,
+    //   size: f.size
+    // })));
 
-    console.log('📦 Multer files received:');
-    if (req.files) {
-      for (const [field, files] of Object.entries(req.files)) {
-        console.log(`🗂️ Field: ${field}`);
-        files.forEach((f, i) => {
-          console.log(`   [${i}] originalname="${f.originalname}", mimetype="${f.mimetype}", size=${f.size}`);
-        });
-      }
-    } else {
-      console.log('🚫 No files received at all.');
-    }
+    await logToBackend({
+      action: 'FILE_UPLOAD',
+      details: `Upload successful: ${f.fieldname}`
+    });
+
+    // console.log('📦 Multer files received:');
+    // if (req.files) {
+    //   for (const [field, files] of Object.entries(req.files)) {
+    //     // console.log(`🗂️ Field: ${field}`);
+    //     files.forEach((f, i) => {
+    //       console.log(`   [${i}] originalname="${f.originalname}", mimetype="${f.mimetype}", size=${f.size}`);
+    //     });
+    //   }
+    // } else {
+    //   console.log('🚫 No files received at all.');
+    // }
 
 
 
@@ -98,40 +115,40 @@ export const uploadLesson = async (req, res) => {
     const lessonStatus = status === 'published';
 
     // 🧩 Debug log
-    console.log('📥 Extracted form data:\n' + JSON.stringify({
-      lesson_title,
-      lesson_description,
-      games: gamesContents,
-      badges,
-      quarter,
-      subjectId,
-      fileTitle,
-      fileSubtitle,
-      videoTitle,
-      videoSubtitle,
-      videoUrl,
-      videoUrlTitle,
-      videoUrlSubtitle,
-      hasFile: !!fileInput,
-      hasVideo: !!videoInput
-    }, null, 2));
+    // console.log('📥 Extracted form data:\n' + JSON.stringify({
+    //   lesson_title,
+    //   lesson_description,
+    //   games: gamesContents,
+    //   badges,
+    //   quarter,
+    //   subjectId,
+    //   fileTitle,
+    //   fileSubtitle,
+    //   videoTitle,
+    //   videoSubtitle,
+    //   videoUrl,
+    //   videoUrlTitle,
+    //   videoUrlSubtitle,
+    //   hasFile: !!fileInput,
+    //   hasVideo: !!videoInput
+    // }, null, 2));
 
     // 🧩 Debug: log imagequiz and its choices
-    if (gamesContents.imagequiz && gamesContents.imagequiz.length > 0) {
-      console.log('🧠 Debug — imagequiz items received:');
-      gamesContents.imagequiz.forEach((item, i) => {
-        console.log(`  ▶ Item ${i}: question="${item.question}" image="${item.image}"`);
-        if (Array.isArray(item.choices)) {
-          item.choices.forEach((ch, j) => {
-            console.log(`     • Choice ${j}:`, ch);
-          });
-        } else {
-          console.log(`     ⚠️ No choices found for item ${i}`);
-        }
-      });
-    } else {
-      console.log('🚫 No imagequiz data found in gamesContents.');
-    }
+    // if (gamesContents.imagequiz && gamesContents.imagequiz.length > 0) {
+    //   console.log('🧠 Debug — imagequiz items received:');
+    //   gamesContents.imagequiz.forEach((item, i) => {
+    //     console.log(`  ▶ Item ${i}: question="${item.question}" image="${item.image}"`);
+    //     if (Array.isArray(item.choices)) {
+    //       item.choices.forEach((ch, j) => {
+    //         console.log(`     • Choice ${j}:`, ch);
+    //       });
+    //     } else {
+    //       console.log(`     ⚠️ No choices found for item ${i}`);
+    //     }
+    //   });
+    // } else {
+    //   console.log('🚫 No imagequiz data found in gamesContents.');
+    // }
 
 
     // Step 1: Get the next lesson_number for this subject in this quarter
@@ -246,7 +263,7 @@ export const uploadLesson = async (req, res) => {
             item.question_img = driveMeta.webContentLink;
             item.file = driveMeta.name;
 
-            console.log(`Uploaded question image for item ${itemIndex}:`, driveMeta.name);
+            // console.log(`Uploaded question image for item ${itemIndex}:`, driveMeta.name);
 
           }
         }
@@ -264,7 +281,7 @@ export const uploadLesson = async (req, res) => {
                 file: driveMeta.name,
                 type: 'image'
               };
-              console.log(`Uploaded choice ${c} for item ${itemIndex}:`, driveMeta.name);
+              // console.log(`Uploaded choice ${c} for item ${itemIndex}:`, driveMeta.name);
 
             }
           } else if (typeof choice === 'string' && choice.trim()) {
@@ -285,7 +302,13 @@ export const uploadLesson = async (req, res) => {
     // 🔹 Insert Games and Game Items
     for (const [gameType, items] of Object.entries(gamesContents || {})) {
       if (!Array.isArray(items) || items.length <= 1) {
-        console.log(`Skipping ${gameType} (less than 2 items)`);
+        // console.log(`Skipping ${gameType} `);
+
+        await logToBackend({
+          action: 'GAME_UPLOAD',
+          details: `Skipping ${gameType} (less than 2 items)`
+        });
+
         continue;
       }
 
@@ -293,6 +316,10 @@ export const uploadLesson = async (req, res) => {
 
       if (!normalizedGameType) {
         console.warn(`Unknown game type from frontend: ${gameType}`);
+        await logToBackend({
+          action: 'GAME_UPLOAD_ERROR',
+          details: `Upload fail, unknown game type: ${gameType}`
+        });
         continue;
       }
 
@@ -303,7 +330,11 @@ export const uploadLesson = async (req, res) => {
       );
 
       if (!typeRow.length) {
-        console.warn(`Skipping game "${gameType}" - game_type_id not found`);
+        // console.warn(`Skipping game "${gameType}" - game_type_id not found`);
+        await logToBackend({
+          action: 'GAME_UPLOAD_ERROR',
+          details: `Upload fail, unknown game_type_id: ${gameType}`
+        });
         continue;
       }
       const gameTypeId = typeRow[0].game_type_id;
@@ -431,10 +462,18 @@ export const uploadLesson = async (req, res) => {
           [jsonUrl, jsonFileName, contentId]
         );
 
-        console.log(`Game JSON uploaded: ${jsonFileName} → ${jsonUrl}`);
+        // console.log(`Game JSON uploaded: ${jsonFileName} → ${jsonUrl}`);
+
+        await logToBackend({
+          action: 'GAME_UPLOAD',
+          details: `Game JSON uploaded: ${jsonFileName} → ${jsonUrl}`
+        });
       } catch (jsonErr) {
-        console.error(`Failed to generate JSON for game ${gameId}:`, jsonErr);
-        // Don't fail lesson
+        // console.error(`Failed to generate JSON for game ${gameId}:`, jsonErr);
+        await logToBackend({
+          action: 'GAME_UPLOAD_ERROR',
+          details: `Failed to generate JSON for game ${gameId}:, ${jsonErr.message || jsonErr}`
+        });
       }
     }
 
@@ -530,21 +569,41 @@ export const uploadLesson = async (req, res) => {
           [quizUrl, quizFile, contentId]
         );
 
-        console.log(`Quiz JSON uploaded: ${quizFile} → ${quizUrl}`);
+        // console.log(`Quiz JSON uploaded: ${quizFile} → ${quizUrl}`);
+        await logToBackend({
+          action: 'TEST_UPLOAD',
+          details: `Quiz JSON uploaded:, ${quizFile} → ${quizUrl}`
+        });
       } catch (jsonErr) {
-        console.error(`Failed to generate quiz JSON for test_id=${testId}:`, jsonErr);
-        // **Do NOT rollback** – the quiz works in the DB, JSON is just a cache
+        // console.error(`Failed to generate quiz JSON for test_id=${testId}:`, jsonErr);
+        await logToBackend({
+          action: 'TEST_UPLOAD_ERROR',
+          details: `Failed to generate quiz JSON for test_id=${testId}:, ${jsonErr.message || jsonErr}`
+        });
       }
 
     };
 
     await insertQuiz(pretestQuestions, 'Pretest');
     await insertQuiz(posttestQuestions, 'Posttest');
+    
+    await logToBackend({
+      action: 'LESSON_UPLOAD',
+      details: `Lesson "${lesson_title}" uploaded successfully with all contents`
+    });
 
     await connection.commit();
     return res.json({ success: true, message: '✅ Lesson uploaded successfully with all contents' });
+
+
   } catch (err) {
-    console.error('💥 Error uploading lesson:', err);
+    // console.error('💥 Error uploading lesson:', err);
+
+    await logToBackend({
+      action: 'UPLOAD_ERROR',
+      details: `Error uploading lesson:, ${err.message || err}`
+    });
+
     await connection.rollback();
     return res.status(500).json({ success: false, error: err.message });
   } finally {

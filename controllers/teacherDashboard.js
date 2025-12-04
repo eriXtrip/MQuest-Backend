@@ -7,11 +7,11 @@ import pool from "../services/db.js";
 export const getTeacherDashboardStats = async (req, res) => {
     const teacherId = req.query.teacher_id;
 
-    console.log("✅ getTeacherDashboardStats triggered");
-    console.log("Teacher ID:", teacherId);
+    //console.log("✅ getTeacherDashboardStats triggered");
+    //console.log("Teacher ID:", teacherId);
 
     if (!teacherId) {
-        console.log("❌ No teacherId found in request");
+        //console.log("❌ No teacherId found in request");
         return res.status(401).json({ error: "Unauthorized: No user found in request." });
     }
 
@@ -23,11 +23,11 @@ export const getTeacherDashboardStats = async (req, res) => {
         );
 
         if (!teacherRows.length || teacherRows[0].role_id !== 2) {
-            console.log("❌ User is not a teacher");
+            //console.log("❌ User is not a teacher");
             return res.status(403).json({ error: "Access denied: User is not a teacher." });
         }
 
-        console.log("✅ Teacher validated:", teacherId);
+        //console.log("✅ Teacher validated:", teacherId);
 
         // 2️⃣ Get sections handled by teacher
         const [sections] = await pool.query(
@@ -36,7 +36,7 @@ export const getTeacherDashboardStats = async (req, res) => {
         );
 
         if (!sections.length) {
-            console.log("⚠️ No sections found for teacher:", teacherId);
+            //console.log("⚠️ No sections found for teacher:", teacherId);
             return res.json({
                 total_pupils: 0,
                 avg_score: 0,
@@ -129,7 +129,7 @@ export const getTeacherDashboardStats = async (req, res) => {
                   }));
 
             } catch (err) {
-                  console.error("Error fetching recent materials:", err);
+                  //console.error("Error fetching recent materials:", err);
             }
         }
 
@@ -165,7 +165,7 @@ export const getTeacherDashboardStats = async (req, res) => {
                   }));
 
             } catch (err) {
-                  console.error("Error fetching pupil overall progress:", err);
+                  //console.error("Error fetching pupil overall progress:", err);
             }
         }
 
@@ -246,7 +246,7 @@ export const getTeacherDashboardStats = async (req, res) => {
 
       recentActivity = activity;
       } catch (err) {
-      console.error("Error fetching recent activity:", err);
+      //console.error("Error fetching recent activity:", err);
       }
 
       // 9️⃣.1 Get Quarterly Progress via Stored Procedure
@@ -273,7 +273,7 @@ export const getTeacherDashboardStats = async (req, res) => {
                 quarterlyProgress[qKey][row.subject_name].push(Number(row.progress_percent));
             }
         } catch (err) {
-            console.error("❌ Error getting quarterly progress:", err);
+            //console.error("❌ Error getting quarterly progress:", err);
         }
 
         // 1️⃣0️⃣ Overall Dashboard Performance Stats
@@ -386,7 +386,7 @@ export const getTeacherDashboardStats = async (req, res) => {
             overallStats.lastWeekStudyTime = Number(studyLast[0]?.avg_study_time_minutes || 0).toFixed(0);
 
         } catch (err) {
-            console.error("❌ Error computing overall stats:", err);
+            //console.error("❌ Error computing overall stats:", err);
         }
 
         // 1️⃣1️⃣ Fetch subjects with lessons and contents
@@ -535,7 +535,7 @@ export const getTeacherDashboardStats = async (req, res) => {
                 };
             }
         } catch (err) {
-            console.error("Error fetching subjects with lessons:", err);
+            //console.error("Error fetching subjects with lessons:", err);
         }
 
 
@@ -559,7 +559,7 @@ export const getTeacherDashboardStats = async (req, res) => {
         });
 
     } catch (error) {
-        console.error("Error in getTeacherDashboardStats:", error);
+        //console.error("Error in getTeacherDashboardStats:", error);
         return res.status(500).json({ error: "Server error. Please try again." });
     }
 };

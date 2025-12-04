@@ -54,7 +54,7 @@ router.post('/', async (req, res) => {
 
     res.json({ message: 'Verification code sent', userId });
   } catch (error) {
-    console.error('Registration error:', error);
+    //console.error('Registration error:', error);
     res.status(500).json({ error: 'Registration failed' });
   } finally {
     connection.release();
@@ -85,7 +85,7 @@ router.post('/set-password', async (req, res) => {
 
     res.json({ message: 'Password set successfully' });
   } catch (error) {
-    console.error('Set password error:', error);
+    //console.error('Set password error:', error);
     res.status(500).json({ error: 'Failed to set password' });
   }
 });

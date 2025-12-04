@@ -97,8 +97,8 @@ export const createAndUploadGameJson = async (connection, gameId, gameType) => {
 
     // === WRITE JSON FILE ===
     await writeFile(filePath, JSON.stringify(gameData, null, 2), 'utf-8');
-    console.log(`JSON file written: ${filePath}`);
-    console.log(`[JSON] About to upload to Drive: ${filename}`);
+    //console.log(`JSON file written: ${filePath}`);
+    //console.log(`[JSON] About to upload to Drive: ${filename}`);
 
     // === UPLOAD TO GOOGLE DRIVE ===
     let driveMeta;
@@ -106,7 +106,7 @@ export const createAndUploadGameJson = async (connection, gameId, gameType) => {
     if (!fs.existsSync(filePath)) {
       throw new Error(`File not found after write: ${filePath}`);
     }
-    console.log(`[JSON] File exists, size: ${fs.statSync(filePath).size} bytes`);
+    //console.log(`[JSON] File exists, size: ${fs.statSync(filePath).size} bytes`);
 
     try {
       driveMeta = await uploadToDrive({
@@ -114,9 +114,9 @@ export const createAndUploadGameJson = async (connection, gameId, gameType) => {
         originalname: filename,
         mimetype: 'application/json'
       });
-      console.log(`Drive upload SUCCESS: ${filename} → ${driveMeta.webContentLink}`);
+      //console.log(`Drive upload SUCCESS: ${filename} → ${driveMeta.webContentLink}`);
     } catch (uploadErr) {
-      console.error(`Drive upload FAILED for ${filename}:`, uploadErr.message);
+      //console.error(`Drive upload FAILED for ${filename}:`, uploadErr.message);
       throw uploadErr;
     }
 
@@ -127,9 +127,9 @@ export const createAndUploadGameJson = async (connection, gameId, gameType) => {
     // === CLEAN UP TEMP FILE ===
     try {
       await unlink(filePath);
-      console.log(`Temp file deleted: ${filePath}`);
+      //console.log(`Temp file deleted: ${filePath}`);
     } catch (unlinkErr) {
-      console.warn(`Failed to delete temp file: ${filePath}`, unlinkErr);
+      //console.warn(`Failed to delete temp file: ${filePath}`, unlinkErr);
     }
 
     return {
@@ -139,7 +139,7 @@ export const createAndUploadGameJson = async (connection, gameId, gameType) => {
     };
 
   } catch (err) {
-    console.error(`Failed to create/upload JSON for game ${gameId}:`, err);
+    //console.error(`Failed to create/upload JSON for game ${gameId}:`, err);
     // Cleanup on error
     try { await unlink(filePath); } catch {}
     throw err;

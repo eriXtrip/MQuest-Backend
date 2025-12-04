@@ -65,14 +65,14 @@ export const sendVerificationEmail = async (email, code, title, message) => {
       html: htmlContent,
     });
 
-    console.log('📧 Email sent:', {
-      id: result.id,
-      to: email,
-      subject: title,
-    });
+    //console.log('📧 Email sent:', {
+    //   id: result.id,
+    //   to: email,
+    //   subject: title,
+    // });
     return true;
   } catch (err) {
-    console.error('❌ Failed to send email:', err);
+    //console.error('❌ Failed to send email:', err);
     throw new Error(`Failed to send email: ${err.message}`);
   }
 };

@@ -6,7 +6,7 @@ import pool from '../services/db.js';
  * Returns all public subjects with their lessons and contents (if any)
  */
 export const getPublicSubjects = async (req, res) => {
-  console.log('🔍 Fetching public subjects...');
+  //console.log('🔍 Fetching public subjects...');
 
   try {
     const { user_id } = req.query;
@@ -39,7 +39,7 @@ export const getPublicSubjects = async (req, res) => {
       [user_id]
     );
 
-    console.log('📚 Subjects found (not enrolled):', subjects.length);
+    //console.log('📚 Subjects found (not enrolled):', subjects.length);
 
     if (subjects.length === 0) {
       return res.json({ success: true, subjects: [] });
@@ -105,7 +105,7 @@ export const getPublicSubjects = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('💥 Database error in getPublicSubjects:', error);
+    //console.error('💥 Database error in getPublicSubjects:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to fetch public subjects',
@@ -145,7 +145,7 @@ export const getSectionsForSearch = async (req, res) => {
       ORDER BY sec.school_year DESC, sec.section_name ASC
     `, [user_id]);
 
-    console.log('📚 Sections found:', sections.length);
+    //console.log('📚 Sections found:', sections.length);
 
     // Format response
     const formattedSections = sections.map(sec => ({
@@ -162,7 +162,7 @@ export const getSectionsForSearch = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Error fetching sections for search:', error);
+    //console.error('Error fetching sections for search:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to fetch sections'

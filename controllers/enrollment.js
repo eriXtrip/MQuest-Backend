@@ -131,7 +131,7 @@ export const verifyEnrollment = async (req, res) => {
     }
 
   } catch (error) {
-    console.error('Enrollment error:', error);
+    //console.error('Enrollment error:', error);
     res.status(500).json({ 
       success: false, 
       error: 'Enrollment failed' 
@@ -159,7 +159,7 @@ export const checkSectionRequiresKey = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Section key check error:', error);
+    //console.error('Section key check error:', error);
     res.status(500).json({ 
       success: false, 
       error: 'Failed to check section requirements' 

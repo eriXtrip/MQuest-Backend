@@ -14,7 +14,7 @@ export const isUserAdmin = async (userId) => {
     );
     return rows.length > 0 && rows[0].role_id === 1;
   } catch (error) {
-    console.error('Error checking admin status:', error);
+    //console.error('Error checking admin status:', error);
     return false; // Fail securely
   }
 };

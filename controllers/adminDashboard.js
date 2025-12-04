@@ -1,6 +1,7 @@
 // my-app-backend/controllers/adminDashboard.js
 import pool from '../services/db.js';
 import { isUserAdmin } from '../utils/checkAdmin.js';
+import { logToBackend } from '../services/backend_log.js';
 
 /**
  * GET /api/admin/lessons/count
@@ -25,7 +26,7 @@ export const getTotalLessonsCount = async (req, res) => {
       });
     }
 
-    console.log('📊 Fetching admin dashboard stats...');
+    // console.log('📊 Fetching admin dashboard stats...');
 
     // Fetch lessons
     const [lessonsRows] = await pool.query('SELECT COUNT(*) AS total FROM lessons');
@@ -63,15 +64,15 @@ export const getTotalLessonsCount = async (req, res) => {
     // Compute activity rate (%)
     const activeRate = totalUsers > 0 ? ((activeUsers / totalUsers) * 100).toFixed(2) : 0;
 
-    console.log('✅ Admin stats:', {
-      totalLessons,
-      totalPupils,
-      totalTeachers,
-      genderStats,
-      totalUsers,
-      activeUsers,
-      activeRate
-    });
+    // console.log('✅ Admin stats:', {
+    //   totalLessons,
+    //   totalPupils,
+    //   totalTeachers,
+    //   genderStats,
+    //   totalUsers,
+    //   activeUsers,
+    //   activeRate
+    // });
 
     res.json({
       success: true,
@@ -89,7 +90,12 @@ export const getTotalLessonsCount = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('💥 Error in getTotalLessonsCount:', error);
+    // console.error('💥 Error in getTotalLessonsCount:', error);
+    await logToBackend({
+      action: 'ERROR',
+      details: `Error in getTotalLessonsCount: ${error.message || error}`
+    });
+
     res.status(500).json({
       success: false,
       error: 'Failed to fetch admin dashboard stats',
@@ -114,12 +120,12 @@ export const getSubjectSummary = async (req, res) => {
       return res.status(403).json({ success: false, error: 'Access denied. Admins only.' });
     }
 
-    console.log('📊 Fetching data from v_subject_summary...');
+    // console.log('📊 Fetching data from v_subject_summary...');
     const [rows] = await pool.query(
       'SELECT * FROM v_subject_summary ORDER BY subject_name, quarter'
     );
 
-    console.log('📊 Fetching raw subject performance summary...');
+    // console.log('📊 Fetching raw subject performance summary...');
     const [performance] = await pool.query(`
       SELECT 
           s.subject_name,
@@ -372,7 +378,12 @@ export const getSubjectSummary = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('💥 Error in getSubjectSummary:', error);
+    // console.error('💥 Error in getSubjectSummary:', error);
+
+    await logToBackend({
+      action: 'ERROR',
+      details: `Error in getSubjectSummary: ${error.message || error}`
+    });
 
     res.status(500).json({
       success: false,
@@ -401,7 +412,7 @@ export const getSubjectUsers = async (req, res) => {
       return res.status(403).json({ success: false, error: 'Access denied. Admins only.' });
     }
 
-    console.log('👥 Fetching data from v_subject_users...');
+    // console.log('👥 Fetching data from v_subject_users...');
     const [rows] = await pool.query(`
       SELECT * FROM v_subject_users
       ORDER BY subject_id, last_name, first_name
@@ -414,7 +425,13 @@ export const getSubjectUsers = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('💥 Error in getSubjectUsers:', error);
+    // console.error('💥 Error in getSubjectUsers:', error);
+
+    await logToBackend({
+      action: 'ERROR',
+      details: `Error in getSubjectUsers: ${error.message || error}`
+    });
+
     res.status(500).json({
       success: false,
       error: 'Failed to fetch subject user data',
@@ -478,10 +495,10 @@ export const getSubjectLessonsAndContents = async (req, res) => {
     );
 
     // LOG RAW ROWS BEFORE SEND
-    console.log('lessonsRows (raw DB result):', lessonsRows);
-    console.log('contentsRows (raw DB result):', contentsRows);
+    // console.log('lessonsRows (raw DB result):', lessonsRows);
+    // console.log('contentsRows (raw DB result):', contentsRows);
 
-    console.log(`Found ${lessonsRows.length} lessons and ${contentsRows.length} contents`);
+    // console.log(`Found ${lessonsRows.length} lessons and ${contentsRows.length} contents`);
 
     res.json({
       success: true,
@@ -490,7 +507,13 @@ export const getSubjectLessonsAndContents = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Error in getSubjectLessonsAndContents:', error);
+    // console.error('Error in getSubjectLessonsAndContents:', error);
+
+    await logToBackend({
+      action: 'ERROR',
+      details: `Error in getSubjectLessonsAndContents: ${error.message || error}`
+    });
+
     res.status(500).json({
       success: false,
       error: 'Failed to fetch lessons and contents',
@@ -514,7 +537,7 @@ export const getTeachersWithSections = async (req, res) => {
       return res.status(403).json({ success: false, error: 'Access denied. Admins only.' });
     }
 
-    console.log('👩‍🏫 Fetching teachers with their sections and subjects...');
+    // console.log('👩‍🏫 Fetching teachers with their sections and subjects...');
 
     const [rows] = await pool.query(`
      SELECT 
@@ -546,7 +569,13 @@ export const getTeachersWithSections = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('💥 Error in getTeachersWithSections:', error);
+    // console.error('💥 Error in getTeachersWithSections:', error);
+
+    await logToBackend({
+      action: 'ERROR',
+      details: `Error in getTeachersWithSections: ${error.message || error}`
+    });
+
     res.status(500).json({
       success: false,
       error: 'Failed to fetch teachers with sections and subjects',
