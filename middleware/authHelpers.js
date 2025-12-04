@@ -20,6 +20,6 @@ export const verifyAndDecodeToken = async (req) => {
   }
 
   // Verify JWT
-  const decoded = jwt.verify(token, process.env.JWT_SECRET);
+  const decoded = jwt.verify(token, process.env.JWT_SECRET, { ignoreExpiration: true });
   return decoded;
 };
