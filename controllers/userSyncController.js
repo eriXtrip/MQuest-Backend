@@ -257,9 +257,11 @@ export const getSyncData = async (req, res) => {
           u.first_name,
           u.middle_name,
           u.last_name,
-          u.suffix
+          u.suffix,
+          a.thumbnail as thumbnail_url  -- Just get the thumbnail
         FROM enroll_me e
         JOIN users u ON e.pupil_id = u.user_id
+        LEFT JOIN avatar a ON u.avatar_id = a.id  -- Join with avatar table
         WHERE e.section_id IN (?) 
           AND e.pupil_id != ?  -- exclude self
           AND u.role_id = 3    -- only pupils
@@ -284,7 +286,8 @@ export const getSyncData = async (req, res) => {
 
         return {
           user_id: u.user_id,
-          full_name: name.trim()
+          full_name: name.trim(),
+          thumbnail_url: u.thumbnail_url  // Just the thumbnail URL
         };
       });
     }
