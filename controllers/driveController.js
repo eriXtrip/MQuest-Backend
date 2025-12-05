@@ -22,14 +22,14 @@ const drive = google.drive({ version: 'v3', auth: oauth2Client });
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const uploadDir = path.join(__dirname, '../Uploads');
 fsPromises.mkdir(uploadDir, { recursive: true }).catch(err => {
-  //console.error('Failed to create uploads directory:', err);
+  console.error('Failed to create uploads directory:', err);
 });
 
 // Setup log directory
 const logDir = path.join(__dirname, '../log');
 const logFilePath = path.join(logDir, 'gdrive_log.txt');
 fsPromises.mkdir(logDir, { recursive: true }).catch(err => {
-  //console.error('Failed to create log directory:', err);
+  console.error('Failed to create log directory:', err);
 });
 
 // Logger function to write to gdrive_log.txt
@@ -38,9 +38,9 @@ const logToFile = async ({ filename, fileId, url, type }) => {
   const logMessage = `[${timestamp}] ${type} - File: ${filename}, ID: ${fileId}, URL: ${url || 'N/A'}\n`;
   try {
     await fsPromises.appendFile(logFilePath, logMessage, 'utf8');
-    //console.log(logMessage.trim()); // Optional: keep console output for debugging
+    console.log(logMessage.trim()); // Optional: keep console output for debugging
   } catch (err) {
-    //console.error('Failed to write to log file:', err);
+    console.error('Failed to write to log file:', err);
   }
 };
 
@@ -131,7 +131,7 @@ export const uploadFile = async (req, res) => {
       parents: folderId,
     });
   } catch (err) {
-    //console.error('Upload error:', err.response?.data || err.message);
+    console.error('Upload error:', err.response?.data || err.message);
     if (req.file) await fsPromises.unlink(req.file.path);
     res.status(500).json({ success: false, error: err.response?.data?.error || err.message });
   }
@@ -157,7 +157,7 @@ export const deleteFile = async (req, res) => {
 
     res.json({ success: true, status: response.status });
   } catch (err) {
-    //console.error('Delete error:', err.response?.data || err.message);
+    console.error('Delete error:', err.response?.data || err.message);
     res.status(500).json({ success: false, error: err.message });
   }
 };
@@ -195,7 +195,7 @@ export const shareFile = async (req, res) => {
       webViewLink: result.data.webViewLink,
     });
   } catch (err) {
-    //console.error('Share error:', err.response?.data || err.message);
+    console.error('Share error:', err.response?.data || err.message);
     res.status(500).json({ success: false, error: err.message });
   }
 };
@@ -233,7 +233,7 @@ export const generateDownloadLink = async (req, res) => {
       webContentLink: result.data.webContentLink,
     });
   } catch (err) {
-    //console.error('Download link error:', err.response?.data || err.message);
+    console.error('Download link error:', err.response?.data || err.message);
     res.status(500).json({ success: false, error: err.message });
   }
 };
@@ -267,7 +267,7 @@ export const getFileMetadata = async (req, res) => {
       modifiedTime: response.data.modifiedTime,
     });
   } catch (err) {
-    //console.error('Metadata error:', err.response?.data || err.message);
+    console.error('Metadata error:', err.response?.data || err.message);
     res.status(500).json({ success: false, error: err.message });
   }
 };

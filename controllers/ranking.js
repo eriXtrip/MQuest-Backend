@@ -10,7 +10,7 @@ import pool from '../services/db.js';
  *    pupil_id     - optional, return only one user's ranking
  */
 export const getOverallRanking = async (req, res) => {
-  //console.log("📊 Fetching Overall Ranking...");
+  console.log("📊 Fetching Overall Ranking...");
 
   try {
     let { limit, pupil_id } = req.query;
@@ -54,7 +54,7 @@ export const getOverallRanking = async (req, res) => {
     //   await pool.query('CALL award_ranking_achievements(NULL)');
     // }
 
-    //console.log(`🏆 Ranking rows returned: ${rows.length}`);
+    console.log(`🏆 Ranking rows returned: ${rows.length}`);
 
     return res.json({
       success: true,
@@ -62,7 +62,7 @@ export const getOverallRanking = async (req, res) => {
     });
 
   } catch (error) {
-    //console.error("💥 Database error in getOverallRanking:", error);
+    console.error("💥 Database error in getOverallRanking:", error);
 
     return res.status(500).json({
       success: false,

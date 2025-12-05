@@ -297,7 +297,7 @@ export const uploadLesson = async (req, res) => {
       const normalizedGameType = gameTypeMap[gameType];
 
       if (!normalizedGameType) {
-        //console.warn(`Unknown game type from frontend: ${gameType}`);
+        console.warn(`Unknown game type from frontend: ${gameType}`);
         continue;
       }
 

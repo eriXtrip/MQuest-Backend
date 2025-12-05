@@ -310,7 +310,7 @@ export const getSyncData = async (req, res) => {
     });
 
   } catch (error) {
-    //console.error('Sync data error:', error);
+    console.error('Sync data error:', error);
     res.status(500).json({ error: 'Failed to fetch sync data' });
   }
 };

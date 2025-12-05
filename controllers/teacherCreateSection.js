@@ -59,7 +59,7 @@ export async function createSection(req, res) {
             
         ]);
 
-        //console.log(teacherId, section_name, section_name, school_year, enrollment_key, hashedEnrollment_Code);
+        console.log(teacherId, section_name, section_name, school_year, enrollment_key, hashedEnrollment_Code);
 
         // Simulate MySQL insertId
         // const result = { insertId: 12345 };  // sample insertId
@@ -71,7 +71,7 @@ export async function createSection(req, res) {
         });
 
     } catch (err) {
-        //console.error("Error creating section:", err);
+        console.error("Error creating section:", err);
         return res.status(500).json({ error: "Server error while creating section." });
     }
 }
@@ -341,7 +341,7 @@ export async function fetchSectionsAndPupils(req, res) {
         });
 
     } catch (err) {
-        //console.error("Error fetching sections and pupils:", err);
+        console.error("Error fetching sections and pupils:", err);
         return res.status(500).json({ error: "Server error while fetching sections." });
     }
 }
