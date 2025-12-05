@@ -283,6 +283,9 @@ export async function fetchSectionsAndPupils(req, res) {
         const pupilIds = pupils.map(p => p.user_id);
         const subjectIds = pupils.flatMap(p => p.subject_progress?.map(s => s.subject_id) || []);
 
+        console.log("Pupil id list: ", pupilIds);
+        console.log("Subject id list: ", subjectIds);
+
         if (pupilIds.length && subjectIds.length) {
             const [lessonProgressRows] = await pool.query(
                 `SELECT 
