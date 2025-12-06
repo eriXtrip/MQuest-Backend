@@ -274,7 +274,7 @@ export const login = async (req, res) => {
                 a.avatar AS avatar_path,
                 a.file_name AS avatar_filename,
                 a.url AS avatar_url,
-                a.thumbnail AS avatar_thumbnail
+                a.thumbnail AS avatar_thumbnail,
                 COALESCE(pp.total_point, 0) AS total_points
             FROM users u
             LEFT JOIN avatar a ON u.avatar_id = a.id
