@@ -178,7 +178,7 @@ export const getSyncData = async (req, res) => {
         is_read,
         created_at,
         read_at,
-        is_synched
+        is_synced
       FROM notifications
       WHERE user_id = ?
       ORDER BY created_at DESC
