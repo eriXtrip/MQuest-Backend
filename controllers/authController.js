@@ -275,8 +275,10 @@ export const login = async (req, res) => {
                 a.file_name AS avatar_filename,
                 a.url AS avatar_url,
                 a.thumbnail AS avatar_thumbnail
+                COALESCE(pp.total_point, 0) AS total_points
             FROM users u
             LEFT JOIN avatar a ON u.avatar_id = a.id
+            LEFT JOIN pupil_points pp ON u.user_id = pp.pupil_id
             WHERE u.email = ?`,
             [email]
         );
@@ -334,6 +336,7 @@ export const login = async (req, res) => {
                 gender: user.gender,
                 lrn: user.lrn,
                 teacherId: user.teacher_id,
+                total_points: user.total_points,
                 avatar: {
                     id: user.avatar_id,
                     fileName: user.avatar_filename,
