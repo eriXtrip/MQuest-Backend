@@ -295,18 +295,37 @@ export async function fetchSectionsAndPupils(req, res) {
                     l.subject_belong AS subject_id,
                     subj.subject_name,
                     l.quarter,
-                    IFNULL(SUM(pts.score) / SUM(pts.max_score) * 100, 0) AS mastery_percent,
-                    IFNULL(COUNT(pcp.duration) / 8 * 100, 0) AS engagement_percent
+
+                    IFNULL(
+                        SUM(pts.score) / NULLIF(SUM(pts.max_score), 0) * 100,
+                    0) AS mastery_percent,
+
+                    LEAST(
+                        100,
+                        IFNULL(SUM(pcp.duration) / 8 * 100, 0)
+                    ) AS engagement_percent
+
                 FROM lessons l
                 LEFT JOIN subjects subj ON subj.subject_id = l.subject_belong
                 LEFT JOIN subject_contents sc ON sc.lesson_belong = l.lesson_id
                 LEFT JOIN tests t ON t.content_id = sc.content_id
-                LEFT JOIN pupil_test_scores pts ON pts.test_id = t.test_id AND pts.pupil_id IN (?)
-                LEFT JOIN pupil_content_progress pcp ON pcp.pupil_id IN (?) AND pcp.content_id = sc.content_id
+                LEFT JOIN pupil_test_scores pts ON pts.test_id = t.test_id
+                LEFT JOIN pupil_content_progress pcp ON pcp.content_id = sc.content_id
+
                 WHERE l.subject_belong IN (?)
-                GROUP BY pts.pupil_id, l.subject_belong, l.lesson_number, l.lesson_title, subj.subject_name, l.quarter
-                ORDER BY pts.pupil_id, l.subject_belong, l.lesson_number`,
-                [pupilIds, pupilIds, subjectIds]
+                AND (pts.pupil_id IN (?) OR pts.pupil_id IS NULL)
+                AND (pcp.pupil_id IN (?) OR pcp.pupil_id IS NULL)
+
+                GROUP BY 
+                    pts.pupil_id,
+                    l.subject_belong,
+                    l.lesson_number,
+                    l.lesson_title,
+                    subj.subject_name,
+                    l.quarter
+
+                ORDER BY l.subject_belong, l.lesson_number`,
+                [subjectIds, pupilIds, pupilIds]
             );
 
             // Attach lesson progress to pupils using subject_name as key
