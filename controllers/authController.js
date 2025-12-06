@@ -464,7 +464,7 @@ export const logout = async (req, res) => {
             
             await pool.query(
                 `UPDATE pupil_points
-                 SET total_points = ? ,
+                 SET total_point = ? ,
                  updated_at = CURRENT_TIMESTAMP
                  WHERE pupil_id = ?`,
                 [pupil_points, user_id]
