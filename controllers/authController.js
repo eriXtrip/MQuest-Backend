@@ -446,8 +446,8 @@ export const verifyToken = async (req, res) => {
 // New logout endpoint
 export const logout = async (req, res) => {
     try {
-        const { user_id } = req.body; // ✅ receive user_id from request body
-    const token = req.headers.authorization?.split(" ")[1]?.trim();
+        const { user_id, pupil_points } = req.body; // ✅ Now accepts pupil_points
+        const token = req.headers.authorization?.split(" ")[1]?.trim();
 
         if (!token) {
             return res.status(400).json({ error: "No token provided" });
@@ -457,12 +457,20 @@ export const logout = async (req, res) => {
             return res.status(400).json({ error: "No user_id provided" });
         }
 
-        // Optionally still verify token, but not required if you trust user_id
-        // try {
-        //     jwt.verify(token, process.env.JWT_SECRET);
-        // } catch (err) {
-        //     return res.status(401).json({ error: "Invalid token" });
-        // }
+        // 🔄 **NEW: Update pupil_points if provided**
+        if (pupil_points !== undefined && pupil_points !== null) {
+            console.log(`🔄 Updating pupil_points for user ${user_id}: ${pupil_points}`);
+            
+            
+            await pool.query(
+                `UPDATE pupil_points
+                 SET total_points = ? ,
+                 updated_at = CURRENT_TIMESTAMP
+                 WHERE pupil_id = ?`,
+                [pupil_points, user_id]
+            );
+            console.log(`✅ Pupil points updated for user ${user_id}`);
+        }
 
         // Insert the token into revoked_tokens
         await pool.query(
@@ -473,7 +481,12 @@ export const logout = async (req, res) => {
         // ✅ Log the logout activity using provided user_id
         await logActivity(user_id, "User logged out");
 
-        res.json({ success: true });
+        res.json({ 
+            success: true, 
+            message: "Logged out successfully",
+            points_synced: pupil_points !== undefined 
+        });
+        
     } catch (error) {
         console.error("Logout failed:", error);
         res.status(500).json({ error: "Logout failed" });
