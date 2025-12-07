@@ -260,13 +260,13 @@ export async function fetchSectionsAndPupils(req, res) {
 
             -- Badges
             LEFT JOIN (
-                SELECT pupil_id, COUNT(*) AS badges_earned
+                SELECT pupil_id, COUNT(DISTINCT badge_id) AS badges_earned
                 FROM pupil_achievements
                 WHERE MONTH(earned_at) = MONTH(CURDATE()) AND YEAR(earned_at) = YEAR(CURDATE())
                 GROUP BY pupil_id
             ) curr_badges ON curr_badges.pupil_id = u.user_id
             LEFT JOIN (
-                SELECT pupil_id, COUNT(*) AS badges_earned
+                SELECT pupil_id, COUNT(DISTINCT achievement_id) AS badges_earned
                 FROM pupil_achievements
                 WHERE MONTH(earned_at) = MONTH(CURDATE())-1 AND YEAR(earned_at) = YEAR(CURDATE())
                 GROUP BY pupil_id
@@ -356,10 +356,20 @@ export async function fetchSectionsAndPupils(req, res) {
             }
         }
 
+        // Fetch teacher lesson performance from the view
+        const [lessonPerformance] = await pool.query(
+            `SELECT *
+             FROM teacher_lesson_performance
+             WHERE teacher_id = ?
+             ORDER BY quarter, lesson_number`,
+            [teacherId]
+        );
+
 
         return res.json({
             sections,
-            pupils
+            pupils,
+            class_performance: lessonPerformance
         });
 
     } catch (err) {
