@@ -260,17 +260,28 @@ export async function fetchSectionsAndPupils(req, res) {
 
             -- Badges
             LEFT JOIN (
-                SELECT pupil_id, COUNT(DISTINCT badge_id) AS badges_earned
+                SELECT pupil_id,
+                    COUNT(DISTINCT badge_id) AS unique_badges,
+                    COUNT(DISTINCT achievement_id) AS unique_achievements,
+                    COUNT(DISTINCT CONCAT_WS('-', achievement_id, badge_id)) AS unique_pairs,
+                    (COUNT(DISTINCT badge_id) + COUNT(DISTINCT CONCAT_WS('-', achievement_id, badge_id))) AS total_earned
                 FROM pupil_achievements
-                WHERE MONTH(earned_at) = MONTH(CURDATE()) AND YEAR(earned_at) = YEAR(CURDATE())
+                WHERE MONTH(earned_at) = MONTH(CURDATE())
+                AND YEAR(earned_at) = YEAR(CURDATE())
                 GROUP BY pupil_id
-            ) curr_badges ON curr_badges.pupil_id = u.user_id
+            ) curr_stats ON curr_stats.pupil_id = u.user_id
+
             LEFT JOIN (
-                SELECT pupil_id, COUNT(DISTINCT achievement_id) AS badges_earned
+                SELECT pupil_id,
+                    COUNT(DISTINCT badge_id) AS unique_badges,
+                    COUNT(DISTINCT achievement_id) AS unique_achievements,
+                    COUNT(DISTINCT CONCAT_WS('-', achievement_id, badge_id)) AS unique_pairs,
+                    (COUNT(DISTINCT badge_id) + COUNT(DISTINCT CONCAT_WS('-', achievement_id, badge_id))) AS total_earned
                 FROM pupil_achievements
-                WHERE MONTH(earned_at) = MONTH(CURDATE())-1 AND YEAR(earned_at) = YEAR(CURDATE())
+                WHERE MONTH(earned_at) = MONTH(CURDATE())-1
+                AND YEAR(earned_at) = YEAR(CURDATE())
                 GROUP BY pupil_id
-            ) prev_badges ON prev_badges.pupil_id = u.user_id
+            ) prev_stats ON prev_stats.pupil_id = u.user_id
 
             WHERE em.section_id IN (?)
             ORDER BY em.enrollment_date DESC;
