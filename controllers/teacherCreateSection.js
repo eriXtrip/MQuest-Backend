@@ -265,8 +265,7 @@ export async function fetchSectionsAndPupils(req, res) {
                     COUNT(DISTINCT badge_id) AS unique_badges,
                     COUNT(DISTINCT achievement_id) AS unique_achievements,
                     COUNT(DISTINCT CONCAT_WS('-', achievement_id, badge_id)) AS unique_pairs,
-                    (COUNT(DISTINCT badge_id) 
-                    + COUNT(DISTINCT CONCAT_WS('-', achievement_id, badge_id))) AS badges_earned
+                    (COUNT(DISTINCT badge_id) + COUNT(DISTINCT achievement_id)) AS badges_earned
                 FROM pupil_achievements
                 WHERE MONTH(earned_at) = MONTH(CURDATE())
                 AND YEAR(earned_at) = YEAR(CURDATE())
@@ -279,8 +278,7 @@ export async function fetchSectionsAndPupils(req, res) {
                     COUNT(DISTINCT badge_id) AS unique_badges,
                     COUNT(DISTINCT achievement_id) AS unique_achievements,
                     COUNT(DISTINCT CONCAT_WS('-', achievement_id, badge_id)) AS unique_pairs,
-                    (COUNT(DISTINCT badge_id) 
-                    + COUNT(DISTINCT CONCAT_WS('-', achievement_id, badge_id))) AS badges_earned
+                    (COUNT(DISTINCT badge_id) + COUNT(DISTINCT achievement_id)) AS badges_earned
                 FROM pupil_achievements
                 WHERE MONTH(earned_at) = MONTH(CURDATE())-1
                 AND YEAR(earned_at) = YEAR(CURDATE())
