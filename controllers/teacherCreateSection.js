@@ -155,6 +155,7 @@ export async function fetchSectionsAndPupils(req, res) {
                 u.gender,
                 em.section_id,
                 s.section_name,
+                IFNULL(pp.total_point,0) AS total_stars,
                 
                 -- Performance Summary
                 IFNULL(curr_avg.avg_mastery,0) AS avg_mastery,
@@ -230,6 +231,9 @@ export async function fetchSectionsAndPupils(req, res) {
             JOIN users u ON u.user_id = em.pupil_id
             LEFT JOIN avatar a ON a.id = u.avatar_id
             JOIN sections s ON s.section_id = em.section_id
+                        
+            -- Add pupil total points
+            LEFT JOIN pupil_points pp ON pp.pupil_id = u.user_id
 
             -- Mastery
             LEFT JOIN (
@@ -286,8 +290,7 @@ export async function fetchSectionsAndPupils(req, res) {
             ) prev_stats ON prev_stats.pupil_id = u.user_id
 
             WHERE em.section_id IN (?)
-            ORDER BY em.enrollment_date DESC;
-
+            ORDER BY em.enrollment_date DESC
             `,
             [sectionIds]
         );
