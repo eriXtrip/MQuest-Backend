@@ -356,22 +356,25 @@ export const getTeacherDashboardStats = async (req, res) => {
 
             // 4. Study Time (overall)
             const [study] = await pool.query(`
-                SELECT AVG(pcp.duration) / 60 AS avg_study_time_minutes
-                FROM pupil_content_progress pcp
-                JOIN enroll_me e ON e.pupil_id = pcp.pupil_id
-                JOIN sections s ON s.section_id = e.section_id
-                WHERE s.teacher_id = ?;
-            `, [teacherId]);
-
-            // 4B. Study Time (LAST WEEK)
-            const [studyLast] = await pool.query(`
-                SELECT AVG(pcp.duration) / 60 AS avg_study_time_minutes
+                SELECT AVG(TIMESTAMPDIFF(SECOND, pcp.started_at, pcp.completed_at)) / 60 AS avg_study_time_minutes
                 FROM pupil_content_progress pcp
                 JOIN enroll_me e ON e.pupil_id = pcp.pupil_id
                 JOIN sections s ON s.section_id = e.section_id
                 WHERE s.teacher_id = ?
-                AND YEARWEEK(pcp.last_accessed, 1) = YEARWEEK(CURDATE() - INTERVAL 1 WEEK, 1);
+                AND pcp.completed_at IS NOT NULL
             `, [teacherId]);
+
+            // 4B. Study Time (LAST WEEK)
+            const [studyLast] = await pool.query(`
+                SELECT AVG(TIMESTAMPDIFF(SECOND, pcp.started_at, pcp.completed_at)) / 60 AS avg_study_time_minutes
+                FROM pupil_content_progress pcp
+                JOIN enroll_me e ON e.pupil_id = pcp.pupil_id
+                JOIN sections s ON s.section_id = e.section_id
+                WHERE s.teacher_id = ?
+                AND pcp.completed_at IS NOT NULL
+                AND YEARWEEK(pcp.last_accessed, 1) = YEARWEEK(CURDATE() - INTERVAL 1 WEEK, 1)
+            `, [teacherId]);
+
 
 
             // Convert results
