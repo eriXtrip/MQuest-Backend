@@ -173,11 +173,12 @@ export async function fetchSectionsAndPupils(req, res) {
                     ELSE 'Stable'
                 END AS engagement_status,
                 
-                IFNULL(curr_badges.badges_earned,0) AS badges_earned,
-                IFNULL(curr_badges.badges_earned - prev_badges.badges_earned,0) AS badges_change,
+                IFNULL(curr_stats.badges_earned,0) AS badges_earned,
+                IFNULL(curr_stats.badges_earned - prev_stats.badges_earned,0) AS badges_change,
+                
                 CASE 
-                    WHEN curr_badges.badges_earned - prev_badges.badges_earned >= 2 THEN 'Motivated'
-                    WHEN curr_badges.badges_earned - prev_badges.badges_earned < 0 THEN 'Falling Behind'
+                    WHEN curr_stats.badges_earned - prev_stats.badges_earned >= 2 THEN 'Motivated'
+                    WHEN curr_stats.badges_earned - prev_stats.badges_earned < 0 THEN 'Falling Behind'
                     ELSE 'No Change'
                 END AS badges_status,
 
@@ -258,25 +259,28 @@ export async function fetchSectionsAndPupils(req, res) {
                 GROUP BY pupil_id
             ) prev_eng ON prev_eng.pupil_id = u.user_id
 
-            -- Badges
+            -- Badges (Current)
             LEFT JOIN (
                 SELECT pupil_id,
                     COUNT(DISTINCT badge_id) AS unique_badges,
                     COUNT(DISTINCT achievement_id) AS unique_achievements,
                     COUNT(DISTINCT CONCAT_WS('-', achievement_id, badge_id)) AS unique_pairs,
-                    (COUNT(DISTINCT badge_id) + COUNT(DISTINCT CONCAT_WS('-', achievement_id, badge_id))) AS badges_earned
+                    (COUNT(DISTINCT badge_id) 
+                    + COUNT(DISTINCT CONCAT_WS('-', achievement_id, badge_id))) AS badges_earned
                 FROM pupil_achievements
                 WHERE MONTH(earned_at) = MONTH(CURDATE())
                 AND YEAR(earned_at) = YEAR(CURDATE())
                 GROUP BY pupil_id
             ) curr_stats ON curr_stats.pupil_id = u.user_id
 
+        -- Badges (Previous)
             LEFT JOIN (
                 SELECT pupil_id,
                     COUNT(DISTINCT badge_id) AS unique_badges,
                     COUNT(DISTINCT achievement_id) AS unique_achievements,
                     COUNT(DISTINCT CONCAT_WS('-', achievement_id, badge_id)) AS unique_pairs,
-                    (COUNT(DISTINCT badge_id) + COUNT(DISTINCT CONCAT_WS('-', achievement_id, badge_id))) AS badges_earnedchange 
+                    (COUNT(DISTINCT badge_id) 
+                    + COUNT(DISTINCT CONCAT_WS('-', achievement_id, badge_id))) AS badges_earned
                 FROM pupil_achievements
                 WHERE MONTH(earned_at) = MONTH(CURDATE())-1
                 AND YEAR(earned_at) = YEAR(CURDATE())
