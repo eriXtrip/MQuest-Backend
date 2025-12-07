@@ -197,7 +197,7 @@ export async function fetchSectionsAndPupils(req, res) {
                         FROM notifications
                         WHERE user_id = u.user_id
                         ORDER BY created_at DESC
-                        LIMIT 3
+                        LIMIT 10
                     ) n
                 ) AS recent_activity,
 
@@ -393,37 +393,37 @@ export async function fetchSectionsAndPupils(req, res) {
 
         const [pupilTests] = await pool.query(
             `
-            SELECT 
-                pts.pupil_id,
-                pts.attempt_number,
-                pts.score,
-                pts.max_score,
-                pts.grade,
-                pts.taken_at,
+                SELECT 
+                    pts.pupil_id,
+                    pts.attempt_number,
+                    pts.score,
+                    pts.max_score,
+                    pts.grade,
+                    pts.taken_at,
 
-                t.test_id,
-                t.test_title,
-                t.description,
-                t.totalItems,
+                    t.test_id,
+                    t.test_title,
+                    t.description,
+                    t.totalItems,
 
-                sc.content_type,
-                sc.title AS content_title,
+                    sc.content_type,
+                    sc.title AS content_title,
 
-                l.lesson_id,
-                l.lesson_title,
-                l.lesson_number,
-                l.quarter,
+                    l.lesson_id,
+                    l.lesson_title,
+                    l.lesson_number,
+                    l.quarter,
 
-                subj.subject_id,
-                subj.subject_name
+                    subj.subject_id,
+                    subj.subject_name
 
-            FROM pupil_test_scores pts
-            JOIN tests t ON t.test_id = pts.test_id
-            JOIN subject_contents sc ON sc.content_id = t.content_id
-            JOIN lessons l ON l.lesson_id = sc.lesson_belong
-            JOIN subjects subj ON subj.subject_id = l.subject_belong
-            WHERE pts.pupil_id IN (?)
-            ORDER BY pts.taken_at DESC
+                FROM pupil_test_scores pts
+                JOIN tests t ON t.test_id = pts.test_id
+                JOIN subject_contents sc ON sc.content_id = t.content_id
+                JOIN lessons l ON l.lesson_id = sc.lesson_belong
+                JOIN subjects subj ON subj.subject_id = l.subject_belong
+                WHERE pts.pupil_id IN (?)
+                ORDER BY pts.taken_at DESC
             `,
             [pupilIds]
         );
