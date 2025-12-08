@@ -196,63 +196,103 @@ export const getSubjectSummary = async (req, res) => {
       ORDER BY u.last_name, u.first_name
     `);
 
-    // 🟢 Teachers list
+    // 🟢 Teachers list - Add class performance data
     const [teachers] = await pool.query(`
-      SELECT
-          t.user_id,
-          a.thumbnail AS avatar_thumbnail,
-          r.role_name AS role,
-          CONCAT(t.first_name, ' ', COALESCE(t.middle_name, ''), ' ', t.last_name) AS full_name,
-          t.created_at,
-          t.active_status,
-          t.last_active,
-          t.email,
-          t.birth_date
-      FROM users t
-      LEFT JOIN avatar a ON t.avatar_id = a.id
-      LEFT JOIN roles r ON t.role_id = r.role_id
-      WHERE t.role_id = 2
-      ORDER BY t.last_name
+        SELECT
+            t.user_id,
+            a.thumbnail AS avatar_thumbnail,
+            r.role_name AS role,
+            CONCAT(t.first_name, ' ', COALESCE(t.middle_name, ''), ' ', t.last_name) AS full_name,
+            t.created_at,
+            t.active_status,
+            t.last_active,
+            t.email,
+            t.birth_date
+        FROM users t
+        LEFT JOIN avatar a ON t.avatar_id = a.id
+        LEFT JOIN roles r ON t.role_id = r.role_id
+        WHERE t.role_id = 2
+        ORDER BY t.last_name
     `);
 
-    // Fetch sections separately
+    // Fetch sections for each teacher
     const [sections] = await pool.query(`
-      SELECT teacher_id, school_name, section_name, pupil_count
-      FROM teacher_sections_overview
-      ORDER BY teacher_id, section_name
+        SELECT teacher_id, section_id, school_name, section_name, pupil_count
+        FROM teacher_sections_overview
+        ORDER BY teacher_id, section_name
     `);
 
-    // Attach sections to each teacher
-    teachers.forEach(t => {
-        t.sections = sections.filter(s => s.teacher_id === t.user_id);
-        t.total_pupils = t.sections.reduce((sum, s) => sum + (s.pupil_count || 0), 0);
-    });
+    // For each teacher, get their overall class performance
+    for (const teacher of teachers) {
+        // Get teacher's sections
+        teacher.sections = sections.filter(s => s.teacher_id === teacher.user_id);
+        teacher.total_pupils = teacher.sections.reduce((sum, s) => sum + (s.pupil_count || 0), 0);
+        
+        // Get overall class performance for this teacher's sections
+        if (teacher.sections.length > 0) {
+            const sectionIds = teacher.sections.map(s => s.section_id);
+            
+            // Get subject progress for teacher's sections
+            const [subjectProgress] = await pool.query(
+                `SELECT 
+                    subject_name,
+                    ROUND(AVG(progress_percent), 2) as avg_progress_percent,
+                    COUNT(DISTINCT pupil_id) as pupil_count
+                FROM v_pupil_progress_with_school
+                WHERE section_id IN (?)
+                GROUP BY subject_name
+                ORDER BY subject_name`,
+                [sectionIds]
+            );
+            
+            // Get test performance for teacher
+            const [testPerformance] = await pool.query(
+                `SELECT 
+                    subject_name,
+                    ROUND(AVG(avg_grade), 2) as avg_grade
+                FROM teacher_lesson_performance
+                WHERE teacher_id = ?
+                GROUP BY subject_name
+                ORDER BY subject_name`,
+                [teacher.user_id]
+            );
+            
+            // Combine progress and test data
+            teacher.class_performance = {
+                subjects: subjectProgress.map(progress => {
+                    const testData = testPerformance.find(t => t.subject_name === progress.subject_name);
+                    return {
+                        subject_name: progress.subject_name,
+                        progress_percent: Number(progress.avg_progress_percent || 0).toFixed(2),
+                        avg_grade: Number(testData?.avg_grade || 0).toFixed(2),
+                        pupil_count: progress.pupil_count || 0
+                    };
+                }),
+                overall_progress: subjectProgress.length > 0 
+                    ? Number(
+                        subjectProgress.reduce((sum, p) => sum + (parseFloat(p.avg_progress_percent) || 0), 0) / 
+                        subjectProgress.length
+                      ).toFixed(2)
+                    : "0.00",
+                overall_grade: testPerformance.length > 0
+                    ? Number(
+                        testPerformance.reduce((sum, t) => sum + (parseFloat(t.avg_grade) || 0), 0) / 
+                        testPerformance.length
+                      ).toFixed(2)
+                    : "0.00"
+            };
+        } else {
+            // No sections, empty performance
+            teacher.class_performance = {
+                subjects: [],
+                overall_progress: "0.00",
+                overall_grade: "0.00"
+            };
+        }
+    }
 
-    // 🟢 Fetch 10 most recent activities per teacher
-    const [teacherActivities] = await pool.query(`
-      SELECT teacher_id, activity_name, executed_at
-      FROM (
-          SELECT 
-              a.activity_by AS teacher_id, 
-              a.activity_name, 
-              a.executed_at,
-              ROW_NUMBER() OVER (PARTITION BY a.activity_by ORDER BY a.executed_at DESC) AS rn
-          FROM activity_log a
-      ) t
-      WHERE rn <= 5
-      ORDER BY teacher_id, executed_at DESC
-    `);
 
-    // Attach recent activities to each teacher
-    teachers.forEach(t => {
-        const activities = teacherActivities
-            .filter(a => a.teacher_id === t.user_id)
-            .map(a => ({ name: a.activity_name, executed_at: a.executed_at }));
-        t.recent_activities = activities; // Array of up to 10 activities
-    });
-
-
-    // console.log("Teachers:", teachers);
+    //console.log("Teachers:", teachers);
 
     // 🟢 Student progress per subject
     const [studentProgress] = await pool.query(`
