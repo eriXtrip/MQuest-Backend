@@ -111,7 +111,7 @@ export const getTeacherDashboardStats = async (req, res) => {
         if (sectionIds.length) {
             try {
                   const [materials] = await pool.query(
-                        `SELECT sc.content_id, sc.title, sc.content_type, sc.uploaded_at, l.lesson_title
+                        `SELECT sc.content_id, sc.title, sc.content_type, sc.uploaded_at, sc.url, sc.file_name, l.lesson_title
                         FROM subject_contents sc
                         JOIN lessons l ON sc.lesson_belong = l.lesson_id
                         ORDER BY sc.uploaded_at DESC
@@ -125,7 +125,7 @@ export const getTeacherDashboardStats = async (req, res) => {
                         url: m.url,
                         file_name: m.file_name,
                         uploaded_at: m.uploaded_at,
-                        lesson_name: m.lesson_name
+                        lesson_name: m.lesson_title
                   }));
 
             } catch (err) {
@@ -172,79 +172,82 @@ export const getTeacherDashboardStats = async (req, res) => {
         //  🔟 Recent Activity Timeline (unified)
       let recentActivity = [];
       try {
-      const [activity] = await pool.query(
-            `
-            SELECT * FROM (
+        if (!pupilIds.length) {
+            recentActivity = [];
+        } else {
+            const [activity] = await pool.query(
+                    `
+                    SELECT * FROM (
 
-            -- Assessments (deduplicated)
-            SELECT 
-                  title, type, date, subtitle, fullname
-            FROM (
-                  SELECT 
-                        t.test_title AS title,
-                        'quiz' AS type,
-                        ts.taken_at AS date,
-                        CONCAT('Score: ', ts.score, '/', ts.max_score) AS subtitle,
-                        CONCAT(u.first_name, ' ', u.middle_name, ' ', u.last_name) AS fullname,
-                        ROW_NUMBER() OVER (PARTITION BY ts.test_id ORDER BY ts.taken_at DESC) AS rn
-                  FROM pupil_test_scores ts
-                  JOIN tests t ON t.test_id = ts.test_id
-                  JOIN users u ON u.user_id = ts.pupil_id
-                  WHERE ts.pupil_id IN (?)
-            ) AS dedup
-            WHERE rn = 1
+                    -- Assessments (deduplicated)
+                    SELECT 
+                        title, type, date, subtitle, fullname
+                    FROM (
+                        SELECT 
+                                t.test_title AS title,
+                                'quiz' AS type,
+                                ts.taken_at AS date,
+                                CONCAT('Score: ', ts.score, '/', ts.max_score) AS subtitle,
+                                CONCAT(u.first_name, ' ', u.middle_name, ' ', u.last_name) AS fullname,
+                                ROW_NUMBER() OVER (PARTITION BY ts.test_id ORDER BY ts.taken_at DESC) AS rn
+                        FROM pupil_test_scores ts
+                        JOIN tests t ON t.test_id = ts.test_id
+                        JOIN users u ON u.user_id = ts.pupil_id
+                        WHERE ts.pupil_id IN (?)
+                    ) AS dedup
+                    WHERE rn = 1
 
-            UNION ALL
+                    UNION ALL
 
-            -- Games
-            SELECT 
-                  sc.title,
-                  sc.content_type AS type,
-                  pp.completed_at AS date,
-                  CONCAT('Completed ', sc.title, ' game') AS subtitle,
-                  CONCAT(u.first_name, ' ', u.middle_name, ' ', u.last_name) AS fullname
-            FROM pupil_content_progress pp
-            JOIN subject_contents sc ON sc.content_id = pp.content_id
-            JOIN users u ON u.user_id = pp.pupil_id
-            WHERE pp.pupil_id IN (?)
-                  AND pp.completed_at IS NOT NULL
+                    -- Games
+                    SELECT 
+                        sc.title,
+                        sc.content_type AS type,
+                        pp.completed_at AS date,
+                        CONCAT('Completed ', sc.title, ' game') AS subtitle,
+                        CONCAT(u.first_name, ' ', u.middle_name, ' ', u.last_name) AS fullname
+                    FROM pupil_content_progress pp
+                    JOIN subject_contents sc ON sc.content_id = pp.content_id
+                    JOIN users u ON u.user_id = pp.pupil_id
+                    WHERE pp.pupil_id IN (?)
+                        AND pp.completed_at IS NOT NULL
 
-            UNION ALL
+                    UNION ALL
 
-            -- Achievements
-            SELECT 
-                  a.title,
-                  'achievement' AS type,
-                  pa.earned_at AS date,
-                  a.description AS subtitle,
-                  CONCAT(u.first_name, ' ', u.middle_name, ' ', u.last_name) AS fullname
-            FROM pupil_achievements pa
-            JOIN achievements a ON a.achievement_id = pa.achievement_id
-            JOIN users u ON u.user_id = pa.pupil_id
-            WHERE pa.pupil_id IN (?)
+                    -- Achievements
+                    SELECT 
+                        a.title,
+                        'achievement' AS type,
+                        pa.earned_at AS date,
+                        a.description AS subtitle,
+                        CONCAT(u.first_name, ' ', u.middle_name, ' ', u.last_name) AS fullname
+                    FROM pupil_achievements pa
+                    JOIN achievements a ON a.achievement_id = pa.achievement_id
+                    JOIN users u ON u.user_id = pa.pupil_id
+                    WHERE pa.pupil_id IN (?)
 
-            UNION ALL
+                    UNION ALL
 
-            -- Enrollment
-            SELECT
-                'Enrollment' AS title,
-                'enrollment' AS type,
-                e.enrollment_date AS date,
-                CONCAT('Enrolled in ', s.section_name) AS subtitle,
-                CONCAT(u.first_name, ' ', u.middle_name, ' ', u.last_name) AS fullname
-            FROM enroll_me e
-            JOIN users u ON u.user_id = e.pupil_id
-            JOIN sections s ON s.section_id = e.section_id
-            WHERE e.pupil_id IN (?)
+                    -- Enrollment
+                    SELECT
+                        'Enrollment' AS title,
+                        'enrollment' AS type,
+                        e.enrollment_date AS date,
+                        CONCAT('Enrolled in ', s.section_name) AS subtitle,
+                        CONCAT(u.first_name, ' ', u.middle_name, ' ', u.last_name) AS fullname
+                    FROM enroll_me e
+                    JOIN users u ON u.user_id = e.pupil_id
+                    JOIN sections s ON s.section_id = e.section_id
+                    WHERE e.pupil_id IN (?)
 
-            ) AS all_activities
-            ORDER BY date DESC
-            LIMIT 0, 1000;
-            `,
-            [pupilIds, pupilIds, pupilIds, pupilIds]
-      );
-
-      recentActivity = activity;
+                    ) AS all_activities
+                    ORDER BY date DESC
+                    LIMIT 0, 1000;
+                    `,
+                    [pupilIds, pupilIds, pupilIds, pupilIds]
+            );
+        }
+        recentActivity = activity;
       } catch (err) {
       console.error("Error fetching recent activity:", err);
       }
@@ -581,7 +584,7 @@ export const getTeacherDashboardStats = async (req, res) => {
             quarterlyProgress: quarterlyProgress,
             overall_progress: overallStats,
             overall_class_performance: overallClassPerformance,
-            subjects: subjects,
+            subjects: subjects
         });
 
     } catch (error) {
