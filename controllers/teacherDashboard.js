@@ -549,19 +549,22 @@ export const getTeacherDashboardStats = async (req, res) => {
         let overallClassPerformance = [];
         try {
             const [perfRows] = await pool.query(
-                `SELECT subject_name, quarter, lesson_number, AVG(avg_grade) AS avg_grade
+                `SELECT 
+                    subject_name,
+                    quarter,
+                    lesson_number,
+                    avg_grade
                 FROM teacher_lesson_performance
                 WHERE teacher_id = ?
-                GROUP BY subject_name, quarter, lesson_number
                 ORDER BY subject_name, quarter, lesson_number`,
                 [teacherId]
             );
-
+            
             overallClassPerformance = perfRows.map(row => ({
                 subject_name: row.subject_name,
                 quarter: row.quarter,
                 lesson_number: row.lesson_number,
-                avg_grade: Number(row.avg_grade) || 0
+                avg_grade: Number(row.avg_grade).toFixed(2)
             }));
 
         } catch (err) {
