@@ -94,6 +94,10 @@ function generateEnrollmentKey() {
  * Fetch all sections handled by a teacher + pupils enrolled
  */
 export async function fetchSectionsAndPupils(req, res) {
+    console.log("=== fetchSectionsAndPupils called ===");
+    console.log("teacherId from body:", req.body.teacherId);
+    console.log("Full request body:", req.body);
+    
     const { teacherId } = req.body;
 
     try {
@@ -391,42 +395,46 @@ export async function fetchSectionsAndPupils(req, res) {
             [teacherId]
         );
 
-        const [pupilTests] = await pool.query(
-            `
-                SELECT 
-                    pts.pupil_id,
-                    pts.attempt_number,
-                    pts.score,
-                    pts.max_score,
-                    pts.grade,
-                    pts.taken_at,
+        // Only fetch pupil tests if there are pupils
+        let pupilTests = [];
+        if (pupilIds.length > 0) {
+            const [pupilTests] = await pool.query(
+                `
+                    SELECT 
+                        pts.pupil_id,
+                        pts.attempt_number,
+                        pts.score,
+                        pts.max_score,
+                        pts.grade,
+                        pts.taken_at,
 
-                    t.test_id,
-                    t.test_title,
-                    t.description,
-                    t.totalItems,
+                        t.test_id,
+                        t.test_title,
+                        t.description,
+                        t.totalItems,
 
-                    sc.content_type,
-                    sc.title AS content_title,
+                        sc.content_type,
+                        sc.title AS content_title,
 
-                    l.lesson_id,
-                    l.lesson_title,
-                    l.lesson_number,
-                    l.quarter,
+                        l.lesson_id,
+                        l.lesson_title,
+                        l.lesson_number,
+                        l.quarter,
 
-                    subj.subject_id,
-                    subj.subject_name
+                        subj.subject_id,
+                        subj.subject_name
 
-                FROM pupil_test_scores pts
-                JOIN tests t ON t.test_id = pts.test_id
-                JOIN subject_contents sc ON sc.content_id = t.content_id
-                JOIN lessons l ON l.lesson_id = sc.lesson_belong
-                JOIN subjects subj ON subj.subject_id = l.subject_belong
-                WHERE pts.pupil_id IN (?)
-                ORDER BY pts.taken_at DESC
-            `,
-            [pupilIds]
-        );
+                    FROM pupil_test_scores pts
+                    JOIN tests t ON t.test_id = pts.test_id
+                    JOIN subject_contents sc ON sc.content_id = t.content_id
+                    JOIN lessons l ON l.lesson_id = sc.lesson_belong
+                    JOIN subjects subj ON subj.subject_id = l.subject_belong
+                    WHERE pts.pupil_id IN (?)
+                    ORDER BY pts.taken_at DESC
+                `,
+                [pupilIds]
+            );
+        }
 
         // Attach test score info to each pupil
         for (let pupil of pupils) {
