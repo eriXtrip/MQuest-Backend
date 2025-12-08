@@ -172,7 +172,7 @@ export const getTeacherDashboardStats = async (req, res) => {
         //  🔟 Recent Activity Timeline (unified)
       let recentActivity = [];
       try {
-        if (!pupilIds.length) {
+        if (totalPupils < 1) {
             recentActivity = [];
         } else {
             const [activity] = await pool.query(
@@ -246,10 +246,11 @@ export const getTeacherDashboardStats = async (req, res) => {
                     `,
                     [pupilIds, pupilIds, pupilIds, pupilIds]
             );
+            recentActivity = activity;
         }
-        recentActivity = activity;
+        
       } catch (err) {
-      console.error("Error fetching recent activity:", err);
+        console.error("Error fetching recent activity:", err);
       }
 
       // 9️⃣.1 Get Quarterly Progress via Stored Procedure
