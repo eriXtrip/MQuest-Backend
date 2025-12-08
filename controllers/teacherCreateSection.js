@@ -97,7 +97,7 @@ export async function fetchSectionsAndPupils(req, res) {
     console.log("=== fetchSectionsAndPupils called ===");
     console.log("teacherId from body:", req.body.teacherId);
     console.log("Full request body:", req.body);
-    
+
     const { teacherId } = req.body;
 
     try {
@@ -398,7 +398,7 @@ export async function fetchSectionsAndPupils(req, res) {
         // Only fetch pupil tests if there are pupils
         let pupilTests = [];
         if (pupilIds.length > 0) {
-            const [pupilTests] = await pool.query(
+            [pupilTests] = await pool.query(
                 `
                     SELECT 
                         pts.pupil_id,

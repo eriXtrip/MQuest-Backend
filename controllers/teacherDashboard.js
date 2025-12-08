@@ -588,7 +588,7 @@ export const getTeacherDashboardStats = async (req, res) => {
             quarterlyProgress: quarterlyProgress,
             overall_progress: overallStats,
             overall_class_performance: overallClassPerformance,
-            subjects: subjects
+            subjects: subjects,
         });
 
     } catch (error) {
