@@ -3,7 +3,7 @@ import pool from '../services/db.js';
 
 export const syncUp = async (req, res) => {
   const userId = req.user.userId;
-  const { pupil_test_scores = [], pupil_answers = [], pupil_progress = [], notifications = [] } = req.body;
+  const { pupil_test_scores = [], pupil_answers = [], pupil_progress = [], notifications = [], pupil_points } = req.body;
 
   const client = await pool.getConnection();
   const insertedScoreIds = [];
@@ -69,6 +69,18 @@ export const syncUp = async (req, res) => {
         ]
       );
       insertedAnswerIds.push(answerResult.insertId || null);
+    }
+
+    // 3. SYNC pupil_points
+    if (typeof pupil_points === 'number') {
+      // Insert or update only if new points are greater
+      await client.query(
+        `INSERT INTO pupil_points (pupil_id, total_point)
+        VALUES (?, ?)
+        ON DUPLICATE KEY UPDATE
+          total_point = IF(VALUES(total_point) > total_point, VALUES(total_point), total_point)`
+        , [userId, pupil_points]
+      );
     }
 
     // Commit transaction
