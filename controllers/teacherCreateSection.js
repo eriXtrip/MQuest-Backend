@@ -302,13 +302,15 @@ export async function fetchSectionsAndPupils(req, res) {
         // Fetch lesson-level progress for all pupils and all subjects in one query
         const pupilIds = pupils.map(p => p.user_id);
         const subjectIds = pupils.flatMap(p => p.subject_progress?.map(s => s.subject_id) || []);
+        const pupilUnion = pupilIds.map(() => "SELECT ? AS pupil_id").join(" UNION ");
 
         console.log("Pupil id list: ", pupilIds);
         console.log("Subject id list: ", subjectIds);
 
         if (pupilIds.length && subjectIds.length) {
             const [lessonProgressRows] = await pool.query(
-                `SELECT 
+                `
+                SELECT 
                     l.lesson_number,
                     l.lesson_title,
                     p.pupil_id,
@@ -328,11 +330,9 @@ export async function fetchSectionsAndPupils(req, res) {
                 FROM lessons l
                 JOIN subjects subj 
                     ON subj.subject_id = l.subject_belong
-                -- inject pupil list so every pupil/lesson combo exists
+
                 JOIN (
-                    SELECT ? AS pupil_id
-                    UNION SELECT ?
-                    UNION SELECT ?
+                    ${pupilUnion}
                 ) p ON 1=1
 
                 LEFT JOIN subject_contents sc 
@@ -345,7 +345,7 @@ export async function fetchSectionsAndPupils(req, res) {
                     ON pcp.content_id = sc.content_id AND pcp.pupil_id = p.pupil_id
 
                 WHERE l.subject_belong IN (?)
-
+                
                 GROUP BY 
                     p.pupil_id,
                     l.subject_belong,
@@ -354,8 +354,9 @@ export async function fetchSectionsAndPupils(req, res) {
                     subj.subject_name,
                     l.quarter
 
-                ORDER BY l.subject_belong, l.lesson_number`,
-            [...pupilIds, subjectIds] // expand pupilIds into UNION SELECTs
+                ORDER BY l.subject_belong, l.lesson_number
+                `,
+                [...pupilIds, ...subjectIds] 
             );
 
             // Attach lesson progress to pupils using subject_name as key
