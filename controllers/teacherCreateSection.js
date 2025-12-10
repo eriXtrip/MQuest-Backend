@@ -443,7 +443,7 @@ export async function fetchSectionsAndPupils(req, res) {
                 .filter(t => t.pupil_id === pupil.user_id)
                 .map(t => ({
                     title: t.test_title,
-                    type: t.test_title.toLowerCase().includes("pre")
+                    type: t.test_title.toLowerCase().includes("pretest")
                             ? "PRE"
                             : t.test_title.toLowerCase().includes("post")
                             ? "POST"
