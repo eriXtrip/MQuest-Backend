@@ -470,3 +470,33 @@ export async function fetchSectionsAndPupils(req, res) {
         return res.status(500).json({ error: "Server error while fetching sections." });
     }
 }
+
+/**
+ * POST /api/teacher/deleteSection
+ * Deletes a section only if there are no pupils enrolled.
+ * Returns 1 if deleted successfully, 0 otherwise.
+ */
+export async function deleteSection(req, res) {
+  const { teacherId, sectionId } = req.body;
+
+  if (!teacherId || !sectionId) {
+    return res.json(0); // missing parameters
+  }
+
+  try {
+    // Delete section only if no pupils are enrolled
+    const [result] = await pool.query(
+      `DELETE FROM sections 
+       WHERE section_id = ? 
+         AND teacher_id = ? 
+         AND NOT EXISTS (SELECT 1 FROM enroll_me WHERE section_id = ?)`,
+      [sectionId, teacherId, sectionId]
+    );
+
+    // result.affectedRows will be 1 if deleted, 0 if not
+    return res.json(result.affectedRows > 0 ? 1 : 0);
+  } catch (err) {
+    console.error("Error deleting section:", err);
+    return res.json(0);
+  }
+}
