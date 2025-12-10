@@ -303,6 +303,7 @@ export async function fetchSectionsAndPupils(req, res) {
         const pupilIds = pupils.map(p => p.user_id);
         const subjectIds = pupils.flatMap(p => p.subject_progress?.map(s => s.subject_id) || []);
         const pupilUnion = pupilIds.map(() => "SELECT ? AS pupil_id").join(" UNION ");
+        const subjectPlaceholders = subjectIds.map(() => "?").join(", ");
 
         console.log("Pupil id list: ", pupilIds);
         console.log("Subject id list: ", subjectIds);
@@ -344,7 +345,7 @@ export async function fetchSectionsAndPupils(req, res) {
                 LEFT JOIN pupil_content_progress pcp 
                     ON pcp.content_id = sc.content_id AND pcp.pupil_id = p.pupil_id
 
-                WHERE l.subject_belong IN (?)
+                WHERE l.subject_belong IN (${subjectPlaceholders})
                 
                 GROUP BY 
                     p.pupil_id,
