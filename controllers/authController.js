@@ -43,9 +43,8 @@ export const startRegistration = async (req, res) => {
     try {
       const [existingUser] = await pool.query(
         `SELECT 1 FROM users 
-        WHERE email = ? 
-        AND role_id = ?`,
-        [email, role_id]
+        WHERE email = ? `,
+        [email]
       );
 
       if (existingUser.length > 0) {
