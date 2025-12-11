@@ -322,7 +322,7 @@ export const syncNotification = async (req, res) => {
   const userId = req.user.userId;
   const { notifications = [] } = req.body;
 
-  console.log('📩 Received notifications from client:', JSON.stringify(notifications, null, 2));
+  //console.log('📩 Received notifications from client:', JSON.stringify(notifications, null, 2));
 
   if (!notifications.length) {
     return res.json({ success: true, inserted_notification_ids: [] });
