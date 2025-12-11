@@ -343,40 +343,46 @@ export const syncNotification = async (req, res) => {
         ? new Date(n.read_at).toISOString().slice(0, 19).replace('T', ' ')
         : (n.is_read ? createdAt : null);
 
-      if (!n.notification_id) {
-        // INSERT new notification (created offline)
-        const [result] = await client.query(
-          `INSERT INTO notifications
-            (user_id, type, title, message, is_read, created_at, read_at, is_synced)
-           VALUES (?, ?, ?, ?, ?, ?, ?, TRUE)`,
-          [
-            userId,
-            n.type || 'info',
-            n.title,
-            n.message,
-            n.is_read,
-            createdAt,
-            readAt
-          ]
-        );
-        insertedNotificationIds.push(result.insertId);
-      } else {
-        // UPDATE existing notification (usually just read status)
+      if (n.server_notification_id) {
+        // UPDATE existing notification
         await client.query(
           `UPDATE notifications
-           SET is_read = ?,
-               read_at = ?,
-               is_synced = TRUE
-           WHERE notification_id = ? AND user_id = ?`,
+          SET is_read = ?,
+              read_at = ?,
+              title = ?,
+              message = ?,
+              type = ?,
+              is_synced = TRUE
+          WHERE server_notification_id = ? AND user_id = ?`,
           [
             n.is_read ? 1 : 0,
             readAt,
-            n.notification_id,
+            n.title,
+            n.message,
+            n.type,
+            n.server_notification_id,
             userId
           ]
         );
-        insertedNotificationIds.push(n.notification_id); // keep order consistent
-      }
+        insertedNotificationIds.push(n.server_notification_id);
+      } else {
+  // INSERT new notification (created offline)
+  const [result] = await client.query(
+    `INSERT INTO notifications
+      (user_id, type, title, message, is_read, created_at, read_at, is_synced)
+     VALUES (?, ?, ?, ?, ?, ?, ?, TRUE)`,
+    [
+      userId,
+      n.type || 'info',
+      n.title,
+      n.message,
+      n.is_read,
+      createdAt,
+      readAt
+    ]
+  );
+  insertedNotificationIds.push(result.insertId);
+}
     }
 
     await client.query('COMMIT');
