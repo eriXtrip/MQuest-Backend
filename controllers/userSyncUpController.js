@@ -83,6 +83,50 @@ export const syncUp = async (req, res) => {
       );
     }
 
+    // 4. SYNC notifications (read status + offline-created)
+    for (const n of notifications) {
+      const createdAt = n.created_at
+        ? new Date(n.created_at).toISOString().slice(0, 19).replace('T', ' ')
+        : new Date().toISOString().slice(0, 19).replace('T', ' ');
+
+      const readAt = n.is_read && n.read_at
+        ? new Date(n.read_at).toISOString().slice(0, 19).replace('T', ' ')
+        : (n.is_read ? createdAt : null);
+
+      if (!n.server_notification_id) {
+        const [result] = await client.query(
+          `INSERT INTO notifications
+            (user_id, type, title, message, is_read, created_at, read_at, is_synced)
+           VALUES (?, ?, ?, ?, ?, ?, ?, TRUE)`,
+          [
+            userId,
+            n.type || 'info',
+            n.title,
+            n.message,
+            n.is_read,
+            createdAt,
+            readAt
+          ]
+        );
+        insertedNotificationIds.push(result.insertId);
+      } else {
+        await client.query(
+          `UPDATE notifications
+           SET is_read = ?,
+               read_at = ?,
+               is_synced = TRUE
+           WHERE notification_id = ? AND user_id = ?`,
+          [
+            n.is_read ? 1 : 0,
+            readAt,
+            n.server_notification_id,
+            userId
+          ]
+        );
+        insertedNotificationIds.push(n.server_notification_id);
+      }
+    }
+
     // Commit transaction
     await client.query('COMMIT');
 
@@ -99,7 +143,8 @@ export const syncUp = async (req, res) => {
       success: true,
       message: 'Sync successful',
       inserted_score_ids: insertedScoreIds,
-      inserted_answer_ids: insertedAnswerIds
+      inserted_answer_ids: insertedAnswerIds,
+      inserted_notification_ids: insertedNotificationIds
     });
 
   } catch (error) {
